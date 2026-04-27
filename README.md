@@ -27,8 +27,7 @@ The App should work for any kind of (location) data.
 
 ### Artefacts
 `log_path.txt`: txt-file with name of event log folder.
-
-'alias_list.rds': rds-file with alias fields and values used for mortality, voltage, and gps_accuracy for use in Notification Shiny App.
+`alias_list.rds`: rds-file with alias fields and values used for mortality, voltage, and gps_accuracy for use in Notification Shiny App.
 
 ### Settings 
 'Subdirectory to store event log' (log_folder): If this character string is provided, a subdirectory will be created within R base package that is meant to be used in subsequent steps in a workflow for filtering alerts using the Notification Filter App. The event log is necessary to delay alert notifications in the Notification Filter App, Note that if this input is left as null (the default), then no event log will be created. Ideally, the specific study ID is used as the log_folder name, which will allow a unique folder name to be generated. This functionality is still in testing and may be updated.
