@@ -12,25 +12,24 @@ library("units")
 rFunction = function(
   # data input (move2 object)
   data, # move2 data
-  log_event = TRUE, # logical to create event log or not
-  log_folder = "log_folder", # create a subdirectory to store the log file for this project
+  log_folder = NULL, # create a subdirectory to store the log file for this project (if left NULL, events will not be logged)
   # alert class 1 = manufacturer notification of mortality event
   mortality = FALSE, # include a manufacturer mortality notification event field?
   mortality_alias = NULL, # name of variable that tracks mortality status (can be more than one name)
   mortality_value = NULL, # levels of variable that indicate a mortality event
-  # alert class 2 = movement based event (identify clustered locations?, number of locations in cluster?)
-  movement = FALSE, # check for movement an that could indicate a mortality or dropped collar?
-  movement_type = c("cluster","nsd"), # use cluster analysis or daily net-squared displacement
-  movement_search_radius = 50, # search radius in meters when using cluster analysis
-  movement_cluster_window = 1, # moving window length when using cluster analysis
-  movement_cluster_minlocations = 5, # minimum number of locations when using cluster analysis
-  movement_cluster_mindays = 5, # minimum number of cluster duration in days to include as event
-  movement_nsd_value = 1000, # area in square meters as a minimum threshold based on daily NSD to have an event
-  movement_nsd_days = 5, # number of days to summarize maximum NSD over
+  # alert class 2 = cluster event (identify clustered locations?, number of locations in cluster?)
+  cluster = FALSE, # include cluster analysis to detect events?
+  search_radius = 50, # search radius in meters when using cluster analysis
+  cluster_window = 1, # moving window length when using cluster analysis
+  cluster_minlocations = 5, # minimum number of locations when using cluster analysis
+  cluster_mindays = 5, # minimum number of cluster duration in days to include as event
+  nsd = FALSE, # include net-squared displacement to detect events?
+  nsd_value = 1000, # area in square meters as a minimum threshold based on daily NSD to have an event
+  nsd_days = 5, # number of days to summarize maximum NSD over
   # alert class 3 = collar voltage event
   voltage = FALSE, # check for low voltage levels in collar
   voltage_alias = NULL, # name of voltage field to check (can be more than one name)
-  voltage_value = "", # minimum voltage to trigger a warning (use 1st quartile if left as "")
+  voltage_value = NULL, # minimum voltage to trigger a warning (use 1st quartile if left as NULL)
   # alert class 4 = GPS accuracy check
   gps_accuracy = FALSE, # check if collar is have low accuracy (e.g., high percentage of 2D fixes)
   gps_accuracy_alias = NULL, # can be more than one field (e.g, different collar vendors for same project)
@@ -100,10 +99,9 @@ rFunction = function(
       data$mortality[which(data$FID %in% mortality_check$FID)] = TRUE
     }
   }
-  # alert class 2 = movement based event (identify clustered locations?, number of locations in cluster?)
-  if(movement){
+  # alert class 2 = cluster event
     # check for cluster and carry out if TRUE
-    if(any(movement_type == "cluster")){
+    if(cluster){
       # convert move2 to data frame for cluster analysis
       clust_data <- data |> as.data.frame()
       # add longitude and latitude coordinates to data frame
@@ -115,17 +113,17 @@ rFunction = function(
                                          Lat = Y)
       # fix sequential cluster algorithm using GPSeq_clus
       clust_out <- GPSeq_clus(dat = clust_data,
-                              search_radius_m = movement_search_radius,
-                              window_days = movement_cluster_window,
-                              clus_min_locs = movement_cluster_minlocations,                                    
+                              search_radius_m = search_radius,
+                              window_days = cluster_window,
+                              clus_min_locs = cluster_minlocations,                                    
                               centroid_calc = "mean",show_plots = c(FALSE, "mean"),                          
                               store_plots = FALSE, scale_plot_clus = FALSE,prbar=FALSE)
       clust_out[[2]]$clus_dur_day <- clust_out[[2]]$clus_dur_hr
       units(clust_out[[2]]$clus_dur_day) <- "days"
       # check for minimum number of cluster days
-      if(any(clust_out[[2]]$clus_dur_day > movement_cluster_mindays)){
+      if(any(clust_out[[2]]$clus_dur_day > cluster_mindays)){
         # filter for minimum number of cluster days
-        clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > movement_cluster_mindays)
+        clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_mindays)
         # add cluster ID field to data
         data$clus_ID <- clust_out[[1]]$clus_ID
         # filter data based on cluster IDs in clust_out[[2]]
@@ -139,7 +137,8 @@ rFunction = function(
         data$cluster[which(data$FID %in% cluster_check$FID)] = TRUE
       }
     }
-    if(any(movement_type == "nsd")){
+  # alert class 3 = NSD event
+    if(nsd){
       # get UTM zone for data
       data_centroid <- data |> st_combine() |> st_centroid() |> st_coordinates() |>
         as.vector()
@@ -154,7 +153,7 @@ rFunction = function(
         amt::make_track(.x = x, .y = y, .t = t,
                         id = id,crs = utm_crs)
       # create variable for user-defined number of days
-      day_interval <- ifelse(movement_nsd_days > 1, paste(movement_nsd_days,"days"), paste(movement_nsd_days,"day"))
+      day_interval <- ifelse(nsd_days > 1, paste(nsd_days,"days"), paste(nsd_days,"day"))
       # create index for group over a user-defined number of days
       amt_track <- amt_track |> mutate(day = lubridate::date(t_)) |> group_by(id) |>
         mutate(day_index = as.factor(ifelse(is.na(as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))),
@@ -169,14 +168,14 @@ rFunction = function(
         mutate(maxNSD = max(nsd_, na.rm=TRUE)) |> 
         ungroup() 
       # conduct check of nsd minimum area for event
-      if(any(amt_max_daily_nsd $maxNSD < movement_nsd_value)){
+      if(any(amt_max_daily_nsd$maxNSD < nsd_value)){
         # create NSD variable for dataset (note that I changed this from using an event list before)
         data$nsd <- FALSE
         # now set the records that have a NSD event to TRUE
-        data$nsd[which(amt_max_daily_nsd$maxNSD < movement_nsd_value)] = TRUE
+        data$nsd[which(amt_max_daily_nsd$maxNSD < nsd_value)] = TRUE
       }
-    }
-  }  
+    }  
+  # alert class 4 = voltage event
   if(voltage){ 
     # set warning for condition true but missing alias or value
     # this will be replace with logger.warning() using in Moveapps
@@ -189,7 +188,7 @@ rFunction = function(
       logger.warn(paste("Voltage alias(es) not found in dataset:",alias_not_found))
     }
     # subset records by user-provided voltage values
-    if(voltage_value != "" & voltage_value >= 1){
+    if(isFALSE(is.null(voltage_value)) & voltage_value >= 1){ 
       voltage_check <- data |> 
         pivot_longer(cols = all_of(voltage_alias), 
                      names_to = "alias", 
@@ -202,7 +201,7 @@ rFunction = function(
         ungroup()  
     }else
       # use given quantile value if voltage_value < 1  
-      if(voltage_value != "" & voltage_value < 1){  
+      if(isFALSE(is.null(voltage_value)) & voltage_value < 1){  # need to fix this to test for NULL
         voltage_check <- data |> 
           pivot_longer(cols = all_of(voltage_alias), 
                        names_to = "alias", 
@@ -215,7 +214,7 @@ rFunction = function(
           ungroup()   
       }else
         # subset records by first quantile of voltage values
-        if(voltage_value == ""){
+        if(is.null(voltage_value)){ # need to fix this to test for NULL
           voltage_check <- data |> 
             pivot_longer(cols = all_of(voltage_alias), 
                          names_to = "alias", 
@@ -374,7 +373,7 @@ rFunction = function(
     # write alias list as artifact for testing
     saveRDS(alias_list, file = appArtificatPath("alias_list.rds"))
     # create event log if log_event = TRUE
-    if(log_event){
+    if(isFALSE(is.null(log_folder))){
       # create empty list to hold unique event logs
       event_list = list()
       # need to build unique ids and notification types
@@ -440,7 +439,6 @@ rFunction = function(
     }
     # organize and return results
     logger.info("Alerts were triggered for at least one field. The full dataset will be passed along with these alerts")
-
     # now return all items as a list (for now)
     return(data)
   }else
@@ -450,4 +448,3 @@ rFunction = function(
     }
   # end function
 }
-
