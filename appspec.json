@@ -2,76 +2,222 @@
   "version": "1.2",
   "settings": [
     {
-      "id": "sdk",
-      "name": "The name of the MoveApps SDK",
-      "description": "Showcase requesting a string input from the users of your app.",
-      "defaultValue": "MoveApps SDK",
+      "id": "log_folder",
+      "name": "Log folder name",
+      "description": "Enter a unique name to create an event log folder. Note that no event log will be created if log folder name is set to default (null). The event log is used in the Notification Filter App to set delays.",
+      "defaultValue": null,
       "type": "STRING"
     },
     {
-      "id": "year",
-      "name": "The year",
-      "description": "Insert description for the year setting setting",
-      "defaultValue": 2022,
+      "id": "mortality",
+      "name": "Set mortality alert trigger?",
+      "description": "Please check this box if you want to check for mortality events in a manufacturer-provided field.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    },
+    {
+      "id": "mortality_alias",
+      "name": "Mortality field name",
+      "description": "Enter field name(s) that tracks mortality status in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if mortality trigger is activated.",
+      "defaultValue": null,
+      "type": "STRING"
+    },
+    {
+      "id": "mortality_value",
+      "name": "Mortality status value",
+      "description": "Enter character string of field that indicates a mortality has occurred. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality value indicates a mortality has occured. Multiple values must be comma-separated and input is only used if mortality trigger is activated.",
+      "defaultValue": null,
+      "type": "STRING"
+    },
+    {
+      "id": "cluster",
+      "name": "Set cluster alert trigger?",
+      "description": "Please check this box if you want to check for cluster events in based on specific parameters.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    },
+    {
+      "id": "cluster_radius",
+      "name": "Cluster search radius",
+      "description": "Enter a numeric value for search radius in meters to use for cluster analysis. Note that input will only be used when cluster trigger is activiated.",
+      "defaultValue": 50,
+      "type": "DOUBLE"
+    },
+    {
+      "id": "cluster_window",
+      "name": "Cluster moving window",
+      "description": "Enter an integer for the number of days to include in the moving window for cluster analysis. Note that input will only be used when cluster trigger is activated.",
+      "defaultValue": 1,
       "type": "INTEGER"
     },
     {
-      "id": "auxiliary-file-a",
-      "name": "Personalization",
-      "description": "You can personalize the app by providing a file",
-      "type": "USER_FILE"
-    }
+      "id": "cluster_minlocations",
+      "name": "Minimum cluster locations",
+      "description": "Enter an integer for the minimum number of locations to form a cluster for cluster analysis. Note that input will only be used when cluster trigger is activated.",
+      "defaultValue": 5,
+      "type": "INTEGER"
+    },
+    {
+      "id": "cluster_mindays",
+      "name": "Minimum cluster days",
+      "description": "Enter an integer for the minimum duration in days as a threshold to include identified cluster events. Note that input will only be used when cluster trigger is activated.",
+      "defaultValue": 5,
+      "type": "INTEGER"
+    },
+    {
+      "id": "nsd",
+      "name": "Set net-squared displacement alert trigger?",
+      "description": "Please check this box if you want to check for maximum net-squared displacement events in based on specific parameters.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    {
+      "id": "nsd_value",
+      "name": "Threshold for maximum net-squared displacement",
+      "description": "Enter a numeric value for the area in square meters as a threshold for the maximum net-squared displacement. Note that input will only be used when nsd trigger is activiated.",
+      "defaultValue": 1000,
+      "type": "DOUBLE"
+    },
+    {
+      "id": "nsd_days",
+      "name": "Net-squared displacement duration",
+      "description": "Enter an integer value for number of days to summarize the maximum net-squared displacement over. Note that input will only be used when nsd trigger is activiated.",
+      "defaultValue": 5,
+      "type": "INTEGER"
+    },  
+    {
+      "id": "voltage",
+      "name": "Set low voltage alert trigger?",
+      "description": "Please check this box if you want to check for low voltage conditions events.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    },
+    {
+      "id": "voltage_alias",
+      "name": "Voltage field name",
+      "description": "Enter field name(s) that tracks voltage in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if voltage trigger is activated.",
+      "defaultValue": null,
+      "type": "STRING"
+    }, 
+    {
+      "id": "voltage_value",
+      "name": "Minimum voltage threshold",
+      "description": "Enter a numeric value for the threshold to trigger a voltage alert. if the value is > 0 and < 1, the quartile function will be used to determine the threshold. If the default value is used (null), the first quartile (0.25) will be applied. Note that input will only be used when voltage trigger is activiated.",
+      "defaultValue": null,
+      "type": "DOUBLE"
+    },  
+    {
+      "id": "gps_accuracy",
+      "name": "Set GPS accuracy alert trigger?",
+      "description": "Please check this box if you want to check for poor GPS accuracy condition events.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    }, 
+    {
+      "id": "gps_accuracy_alias",
+      "name": "GPS accuracy field name",
+      "description": "Enter field name(s) that tracks GPS accuracy in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
+      "defaultValue": null,
+      "type": "STRING"
+    },
+    {
+      "id": "gps_accuracy_value",
+      "name": "GPS accuracy value",
+      "description": "Enter character string of field that indicates a missed location or poor GPS accuracy has occurred. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one GPS accuracy value indicates a missed location or poor GPS accuracy has occured. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
+      "defaultValue": null,
+      "type": "STRING"
+    },
+    {
+      "id": "gps_accuracy_prop",
+      "name": "Minimum proportion threshold",
+      "description": "Enter a numeric value for the proportion of missed locations or poor GPS accuracy as a threshold to trigger an event. Note that input will only be used when GPS accuracy is activiated.",
+      "defaultValue": 0.10,
+      "type": "DOUBLE"
+    },  
+    {
+      "id": "gps_transmission",
+      "name": "Set GPS transmission alert trigger?",
+      "description": "Please check this box if you want to check GPS transmission anomalies.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    },  
+    {
+      "id": "gps_transmission_gap",
+      "name": "GPS transmission gap value",
+      "description": "Enter an integer value for the gap in days to trigger a GPS transmission alter. Note that input will only be used when the GPS transmission trigger is activiated.",
+      "defaultValue": 5,
+      "type": "INTEGER"
+    },   
+    {
+      "id": "gps_transmission_include_current",
+      "name": "Include current date in timestamp?",
+      "description": "Please check this box if you want to include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that input will only be used when the GPS transmission trigger is activiated.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    }     
   ],
   "dependencies": {
     "R": [
       {
-        "name": "lubridate"
+        "name": "amt"
       },
       {
-        "remotes": "install_git('https://gitlab.com/bartk/move2.git')"
-      }
+        "name": "move2"
+      },
+      {
+        "name": "remotes"
+      },
+      {
+        "name": "sf"
+      },
+      {
+        "name": "tidyverse"
+      },
+      {
+        "name": "tools"
+      },
+      {
+        "name": "units"
+      },
+      {
+        "remotes": "install_github('bhaskarvk/leaflet.extras')"
+      },
+      {
+        "remotes": "install_github('cran/GPSeqClus')"
+      },
     ]
   },
-  "providedAppFiles": [
-    {
-      "settingId": "auxiliary-file-a",
-      "from": "data/auxiliary/user-files/provided-app-files/auxiliary-file-a/sample.txt"
-    }
-  ],
   "license": {
     "key": "MIT"
   },
   "language": "eng",
   "keywords": [
-    "example",
-    "template"
+    "alert",
+    "collar",
+    "cluster",
+    "nsd",
+    "voltage",
+    "gps",
+    "mortality"
   ],
   "people": [
     {
-      "firstName": "Charles",
-      "middleInitials": null,
-      "lastName": "Darwin",
-      "email": "creator@example.com",
+      "firstName": "Daniel",
+      "middleInitials": "R.",
+      "lastName": "Eacker",
+      "email": "daniel.eacker@tauruswildlifeconsulting.com",
       "roles": [
         "author",
+        "compiler",
         "creator"
       ],
-      "orcid": null,
-      "affiliation": null,
-      "affiliationRor": null
+      "orcid": "0000-0003-0194-0726",
+      "affiliation": "Taurus Wildlife Consulting",
     }
   ],
   "funding": [
     {
-      "name": "funder name",
-      "comment": "grant for App"
-    }
-  ],
-  "references": [
-    {
-      "type": "IsDescribedBy",
-      "note": "Darwin, C. 1900. The creation. Journal XY. 1-2",
-      "url": "https://anylink.xyz"
+      "name": "Government of Yukon",
+      "comment": "Grant for to develop Collar Health MoveApps"
     }
   ]
 }
