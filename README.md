@@ -31,10 +31,14 @@ The App should work for any kind of (location) data.
 `alias_list.rds`: rds-file with alias fields and values used for mortality, voltage, and gps_accuracy for use in Notification Shiny App.
 
 ### Settings 
-'Subdirectory to store event log' (log_folder): If this character string is provided, a subdirectory will be created within R base package that is meant to be used in subsequent steps in a workflow for filtering alerts using the Notification Filter App. The event log is necessary to delay alert notifications in the Notification Filter App, Note that if this input is left as null (the default), then no event log will be created. Ideally, the specific study ID is used as the log_folder name, which will allow a unique folder name to be generated. This functionality is still in testing and may be updated.
-'Set mortality alert trigger' (mortality): The logical indicator acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
+`Subdirectory to store event log` (log_folder): If this character string is provided, a subdirectory will be created within R base package that is meant to be used in subsequent steps in a workflow for filtering alerts using the Notification Filter App. The event log is necessary to delay alert notifications in the Notification Filter App, Note that if this input is left as null (the default), then no event log will be created. Ideally, the specific study ID is used as the log_folder name, which will allow a unique folder name to be generated. This functionality is still in testing and may be updated.
+
+`Set mortality alert trigger` (mortality): The logical indicator acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
+
 'Mortality field name' (mortality_alias): This character string is the field name that tracks mortality status in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
+
 'Mortality status value' (mortality_value): This character string is the value that indicates that a mortality has occurred for a given location. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
+
 'Set cluster alert trigger' (cluster)
 
 
