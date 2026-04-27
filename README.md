@@ -27,6 +27,7 @@ The App should work for any kind of (location) data.
 
 ### Artefacts
 `log_path.txt`: txt-file with name of event log folder.
+
 `alias_list.rds`: rds-file with alias fields and values used for mortality, voltage, and gps_accuracy for use in Notification Shiny App.
 
 ### Settings 
