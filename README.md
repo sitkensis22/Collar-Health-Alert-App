@@ -35,11 +35,11 @@ The App should work for any kind of (location) data.
 
 `Set mortality alert trigger` (mortality): The logical indicator acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
 
-'Mortality field name' (mortality_alias): This character string is the field name that tracks mortality status in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
+`Mortality field name` (mortality_alias): This character string is the field name that tracks mortality status in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
 
-'Mortality status value' (mortality_value): This character string is the value that indicates that a mortality has occurred for a given location. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
+`Mortality status value` (mortality_value): This character string is the value that indicates that a mortality has occurred for a given location. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
 
-'Set cluster alert trigger' (cluster)
+`Set cluster alert trigger` (cluster)
 
 
 
