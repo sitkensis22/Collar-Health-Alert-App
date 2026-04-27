@@ -1,4 +1,23 @@
 {
-    "sdk": "MoveApps R SDK",
-    "year": 2014
+    "log_folder": "2133706018",
+    "mortality": true,
+    "mortality_alias": "mortality status",
+    "mortality_value": "Mortality no radius",
+    "cluster": true,
+    "cluster_radius": "50",
+    "cluster_window": "1",
+    "cluster_minlocations": "5",
+    "cluster_mindays": "5",
+    "nsd": true,
+    "nsd_value": "1000",
+    "nsd_days": "5",
+    "voltage": true,
+    "voltage_value": null,
+    "gps_accuracy": true,
+    "gps_accuracy_alias": "gps_fix_type_raw",
+    "gps_accuracy_value": "NO FIX",
+    "gps_accuracy_prop": "0.10",
+    "gps_transmission": true,
+    "gps_transmission_gap": "5",
+    "gps_transmission_include_current": false
 }
