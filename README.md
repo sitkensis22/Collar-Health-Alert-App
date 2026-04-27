@@ -2,7 +2,7 @@
 
 MoveApps
 
-Github repository: *github.com/sitkensis22/Notification-Alert-App* *https://github.com/sitkensis22/Notification-Alert-App*
+Github repository: *github.com/sitkensis22/Notification-Alert-App* (*https://github.com/sitkensis22/Notification-Alert-App*)
 
 ## Description
 Generates and appends field to data for 6 different types of alerts that are were developed to monitor collar health: (1) mortality status, (2) cluster analysis, (3) maximum net-squared displacement, (4) voltage levels, (5) GPS accuracy, and (6) GPS transmission gaps.
