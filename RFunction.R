@@ -19,7 +19,7 @@ rFunction = function(
   mortality_value = NULL, # levels of variable that indicate a mortality event
   # alert class 2 = cluster event
   cluster = FALSE, # include cluster analysis to detect events?
-  search_radius = 50, # search radius in meters when using cluster analysis
+  cluster_radius = 50, # search radius in meters when using cluster analysis
   cluster_window = 1, # moving window length when using cluster analysis
   cluster_minlocations = 5, # minimum number of locations when using cluster analysis
   cluster_mindays = 5, # minimum number of cluster duration in days to include as event
@@ -114,7 +114,7 @@ rFunction = function(
                                          Lat = Y)
       # fix sequential cluster algorithm using GPSeq_clus
       clust_out <- GPSeq_clus(dat = clust_data,
-                              search_radius_m = search_radius,
+                              search_radius_m = cluster_radius,
                               window_days = cluster_window,
                               clus_min_locs = cluster_minlocations,                                    
                               centroid_calc = "mean",show_plots = c(FALSE, "mean"),                          
