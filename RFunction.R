@@ -372,7 +372,7 @@ rFunction = function(
     }
     # save to alias list to temp_path folder as .rds
     saveRDS(alias_list, 
-            file = paste0(temp_path,"/",paste0("log_",log_folder),"/alias_list.rds"))
+            file = paste0(temp_path,"/","alias_folder/alias_list.rds"))
     # write alias list as artifact for testing
     saveRDS(alias_list, file = appArtificatPath("alias_list.rds"))
     # create event log if log_event = TRUE
