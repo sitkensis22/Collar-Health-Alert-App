@@ -17,25 +17,26 @@ rFunction = function(
   mortality = FALSE, # include a manufacturer mortality notification event field?
   mortality_alias = NULL, # name of variable that tracks mortality status (can be more than one name)
   mortality_value = NULL, # levels of variable that indicate a mortality event
-  # alert class 2 = cluster event (identify clustered locations?, number of locations in cluster?)
+  # alert class 2 = cluster event
   cluster = FALSE, # include cluster analysis to detect events?
   search_radius = 50, # search radius in meters when using cluster analysis
   cluster_window = 1, # moving window length when using cluster analysis
   cluster_minlocations = 5, # minimum number of locations when using cluster analysis
   cluster_mindays = 5, # minimum number of cluster duration in days to include as event
+  # alert class 3 = nsd event
   nsd = FALSE, # include net-squared displacement to detect events?
   nsd_value = 1000, # area in square meters as a minimum threshold based on daily NSD to have an event
   nsd_days = 5, # number of days to summarize maximum NSD over
-  # alert class 3 = collar voltage event
+  # alert class 4 = collar voltage event
   voltage = FALSE, # check for low voltage levels in collar
   voltage_alias = NULL, # name of voltage field to check (can be more than one name)
   voltage_value = NULL, # minimum voltage to trigger a warning (use 1st quartile if left as NULL)
-  # alert class 4 = GPS accuracy check
+  # alert class 5 = GPS accuracy check
   gps_accuracy = FALSE, # check if collar is have low accuracy (e.g., high percentage of 2D fixes)
   gps_accuracy_alias = NULL, # can be more than one field (e.g, different collar vendors for same project)
   gps_accuracy_value = NULL, # what levels of the variable indicate low accuracy?
   gps_accuracy_prop = 0.10, # what proportion of low accuracy locations should trigger an event
-  # alert class 5 = GPS transmission gap
+  # alert class 6 = GPS transmission gap
   gps_transmission = FALSE, # check if collar has a gap in GPS transmissions
   gps_transmission_gap = 3, # number of days between current date and last GPS transmission to trigger an event
   gps_transmission_include_current = FALSE, # add the current system date to the timestamp vector in calculating the time differences
@@ -243,6 +244,7 @@ rFunction = function(
       data$voltage[which(data$FID %in% voltage_check$FID)] = TRUE
     }
   }
+  # alert class 5 = GPS accuracy event
   if(gps_accuracy){
     # set warning for condition true but missing alias or value
     # this will be replace with logger.warning() using in Moveapps
@@ -320,6 +322,7 @@ rFunction = function(
       }
     }
   }
+  # alert class 6 = GPS transmission event 
   if(gps_transmission){
     # check for events based on timestamp
     if(gps_transmission_include_current){
