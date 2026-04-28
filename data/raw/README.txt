@@ -4,7 +4,7 @@ Set of input data to test apps.
 - input1: 1 goat, median fix rate = 30mins, tracking duration 7.5 month, gps, local movement
 - input2: 3 storks, median fix rate = 1sec, tracking duration 2 weeks, gps, local movement
 - input3: 1 stork, median fix rate = 1h | 1day | 1 week, tracking duration 11.5 years, argos, includes migration
-- input4: 3 geese, median fix rate = 1h | 4h, tracking duration 1.5 years, gps, includes migration | included simulated mortality_status and gps_fix_type raw fields for testing purposes
+- input4: 3 geese, median fix rate = 1h | 4h, tracking duration 1.5 years, gps, includes migration | includes simulated mortality_status and gps_fix_type raw fields for testing purposes in 'input4_move2loc_LatLon.rds' dataset
 
 *I/O types*
 - all data sets are provided as 'move2_loc'
