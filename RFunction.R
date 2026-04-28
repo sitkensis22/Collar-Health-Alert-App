@@ -113,6 +113,355 @@ rFunction = function(
                                          Long = X,
                                          Lat = Y)
       # fix sequential cluster algorithm using GPSeq_clus
+      clust_out <- tryCatch(GPSeq_clus(dat = clust_data,
+                              search_radius_m = cluster_radius,
+                              window_days = cluster_window,
+                              clus_min_locs = cluster_minlocations,                                    
+                              centroid_calc = "mean",show_plots = c(FALSE, "mean"),                          
+                              store_plots = FALSE, scale_plot_clus = FALSE,prbar=FALSE),
+                              error = function(e) {NULL})
+      if(isFALSE(is.null(clust_out))){
+        clust_out[[2]]$clus_dur_day <- clust_out[[2]]$clus_dur_hr
+        units(clust_out[[2]]$clus_dur_day) <- "days"
+        # check for minimum number of cluster days
+        if(any(clust_out[[2]]$clus_dur_day > cluster_duration)){
+          # filter for minimum number of cluster days
+          clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_duration)
+          # add cluster ID field to data
+          data$clus_ID <- clust_out[[1]]$clus_ID
+          # filter data based on cluster IDs in clust_out[[2]]
+          cluster_check <- data |> filter(clus_ID %in% clust_out[[2]]$clus_ID) |> 
+            dplyr::select(-clus_ID)
+          # remove clus_ID from data
+          data <- data |> dplyr::select(-clus_ID)
+          # create cluster variable for dataset (note that I changed this from using an event list before)
+          data$cluster <- FALSE
+          # now set the records that have a cluster event to TRUE
+          data$cluster[which(data$FID %in% cluster_check$FID)] = TRUE
+        }
+      }
+    }
+  # alert class 3 = NSD event
+    if(nsd){
+      # get UTM zone for data
+      data_centroid <- data |> st_combine() |> st_centroid() |> st_coordinates() |>
+        as.vector()
+      # determine UTM zone
+      zone_number <- floor((data_centroid[1] + 180) / 6) + 1
+      utm_crs <- paste("+proj=utm",paste0("+zone=",zone_number),"+datum=WGS84 +units=m +no_defs")
+      data_utm <- data |> st_transform(st_crs(utm_crs))
+      # create amt dataset
+      amt_track <- data_utm |> mutate(x = st_coordinates(data_utm)[,1], y = st_coordinates(data_utm)[,2],
+                                      id = mt_track_id(data_utm), t = mt_time(data_utm)) |> 
+        st_drop_geometry() |> 
+        amt::make_track(.x = x, .y = y, .t = t,
+                        id = id,crs = utm_crs)
+      # create variable for user-defined number of days
+      day_interval <- ifelse(nsd_duration > 1, paste(nsd_duration,"days"), paste(nsd_duration,"day"))
+      # create index for group over a user-defined number of days
+      amt_track <- amt_track |> mutate(day = lubridate::date(t_)) |> group_by(id) |>
+        mutate(day_index = as.factor(ifelse(is.na(as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))),
+                                            max(as.numeric(cut(day, seq(min(day), max(day), by = day_interval))),na.rm=TRUE)+1,
+                                            as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))))) |> ungroup()
+      # split track by id and day index, calculate NSD, and then merge again
+      amt_track_daily_nsd <- amt_track |>
+        group_split(id,day_index) |>
+        lapply(add_nsd) |> mt_stack(.track_combine = "merge")
+      # now calculate max NSD by ID and day index
+      amt_max_daily_nsd <- amt_track_daily_nsd |> dplyr::group_by(id, day_index) |> # Group by ID and day
+        mutate(maxNSD = max(nsd_, na.rm=TRUE)) |> 
+        ungroup() 
+      # conduct check of nsd minimum area for event
+      if(any(amt_max_daily_nsd$maxNSD < nsd_value)){
+        # create NSD variable for dataset (note that I changed this from using an event list before)
+        data$nsd <- FALSE
+        # now set the records that have a NSD event to TRUE
+        data$nsd[which(amt_max_daily_nsd$maxNSD < nsd_value)] = TRUE
+      }
+    }  
+  # alert class 4 = voltage event
+  if(voltage){ 
+    # set warning for condition true but missing alias or value
+    # this will be replace with logger.warning() using in Moveapps
+    if(voltage & is.null(voltage_alias)){
+      logger.warn("Must provide voltage alias when voltage event is requested")
+    }
+    # check if voltage alias is in the dataset
+    if(isFALSE(all(voltage_alias %in% colnames(data)))){
+      alias_not_found <- mortality_alias[which(voltage_alias %in% colnames(data) == FALSE)]
+      logger.warn(paste("Voltage alias(es) not found in dataset:",alias_not_found))
+    }
+    # subset records by user-provided voltage values
+    if(isFALSE(is.null(voltage_value))){ 
+      # nest these ifelse statements to avoid error
+       if(voltage_value >= 1){
+        voltage_check <- data |> 
+          pivot_longer(cols = all_of(voltage_alias), 
+                       names_to = "alias", 
+                       values_to = "alias_vals") |> 
+          mutate(alias_vals = set_units(alias_vals, mV)) |>
+          group_by(mt_track_id_column(data)) |> 
+          filter(alias_vals <= set_units(voltage_value, mV)) |>
+          mutate(tag_voltage = alias_vals) |> 
+          dplyr::select(-alias,-alias_vals) |>
+          ungroup()  
+      }else
+      # use given quantile value if voltage_value < 1  
+      if(voltage_value < 1){  # need to fix this to test for NULL
+        voltage_check <- data |> 
+          pivot_longer(cols = all_of(voltage_alias), 
+                       names_to = "alias", 
+                       values_to = "alias_vals") |> 
+          mutate(alias_vals = set_units(alias_vals, mV)) |>
+          group_by(mt_track_id_column(data)) |> 
+          filter(alias_vals <= set_units(as.numeric(quantile(alias_vals, probs = voltage_value, na.rm = TRUE)), mV)) |>
+          mutate(tag_voltage = alias_vals) |> 
+          dplyr::select(-alias,-alias_vals) |>
+          ungroup()
+       }
+      }else
+        # subset records by first quantile of voltage values
+        if(is.null(voltage_value)){ # need to fix this to test for NULL
+          voltage_check <- data |> 
+            pivot_longer(cols = all_of(voltage_alias), 
+                         names_to = "alias", 
+                         values_to = "alias_vals") |> 
+            mutate(alias_vals = set_units(alias_vals, mV)) |>
+            group_by(mt_track_id_column(data)) |> 
+            filter(alias_vals <= set_units(as.numeric(quantile(alias_vals, probs = 0.25, na.rm = TRUE)), mV)) |>
+            mutate(tag_voltage = alias_vals) |> 
+            dplyr::select(-alias,-alias_vals) |>
+            ungroup() 
+        }
+    if(nrow(voltage_check) > 0){
+      # reset to move2 object
+      voltage_check <-mt_as_move2(voltage_check,
+                                  sf_column_name = "geometry", time_column = mt_time_column(data),
+                                  track_id_column = mt_track_id_column(data))
+      # set class of voltage check to class of data
+      class(voltage_check) = class(data)
+      # remove duplicate records based on FID
+      if(any(duplicated(voltage_check$FID))){
+        voltage_check <- voltage_check |> slice(-which(duplicated(FID)))
+      }
+      # create voltage variable for dataset (note that I changed this from using an event list before)
+      data$voltage <- FALSE
+      # now set the records that have a voltage event to TRUE
+      data$voltage[which(data$FID %in% voltage_check$FID)] = TRUE
+    }
+  }
+  # alert class 5 = GPS accuracy event
+  if(gps_accuracy){
+    # set warning for condition true but missing alias or value
+    # this will be replace with logger.warning() using in Moveapps
+    if(gps_accuracy & is.null(gps_accuracy_alias) | gps_accuracy & is.null(gps_accuracy_value)){
+      logger.warn("Must provide GPS accuracy alias and GPS accuracy value when GPS accuracy event is requested")
+    }
+    # check if GPS accuracy alias is in the dataset
+    if(isFALSE(all(gps_accuracy_alias %in% colnames(data)))){
+      alias_not_found <- gps_accuracy_alias[which(gps_accuracy_alias %in% colnames(data) == FALSE)]
+      logger.warn(paste("GPS accuracy alias(es) not found in dataset:",alias_not_found))
+    }
+    # subset records for based on GPS accuracy supplied 
+    # check if gps accuracy variables are a factor, if not, convert them
+    if(isFALSE(all(data |> as.data.frame() |> dplyr::select(all_of(gps_accuracy_alias)) |> sapply(is.factor)))){
+      check_factor_index <- which(data |> as.data.frame() |> dplyr::select(all_of(gps_accuracy_alias)) |> sapply(is.factor) == FALSE)
+      data <- data |> mutate(across(gps_accuracy_alias[check_factor_index], as.factor))
+    }
+    # check if GPS accuracy values exist in levels of GPS accuracy alias variable(s)
+    test_levels <- data |> as.data.frame() |> dplyr::select(all_of(gps_accuracy_alias)) |>
+      pivot_longer(cols = all_of(gps_accuracy_alias),
+                   names_to = "test_var",
+                   values_to = "test_vals") 
+    # now test if GPS accuracy values are in test_vals
+    if(any(gps_accuracy_value %in% levels(test_levels$test_vals) == FALSE)){
+      variable_not_found <- gps_accuracy_value[which(gps_accuracy_value %in% test_levels$test_vals == FALSE)]
+      logger.warn(paste("At least one GPS accuracy value not found in levels of GPS accuracy variable(s):",variable_not_found))
+    } 
+    # use factor() to remove unused levels
+    data <- data |> mutate(across(all_of(gps_accuracy_alias), factor))
+    # conduct GPS accuracy event check
+    gps_accuracy_check <- data |> 
+      pivot_longer(cols = all_of(gps_accuracy_alias), 
+                   names_to = "alias", 
+                   values_to = "alias_vals") |>
+      group_by(mt_track_id_column(data)) |> 
+      filter(alias_vals %in% gps_accuracy_value) |>
+      mutate(gps_fix_type = alias_vals) |>
+      dplyr::select(-alias,-alias_vals) |> 
+      ungroup()
+    # create dataset if data contains any poor fixes
+    if(nrow(gps_accuracy_check)>0){
+      # reset to move2 object
+      gps_accuracy_check <-mt_as_move2(gps_accuracy_check,
+                                       sf_column_name = "geometry", time_column = mt_time_column(data),
+                                       track_id_column = mt_track_id_column(data))
+      # set class of GPS accuracy check to class of data
+      class(gps_accuracy_check) = class(data)
+      # remove duplicate records based on FID
+      if(any(duplicated(gps_accuracy_check$FID))){
+        gps_accuracy_check <- gps_accuracy_check_check |> slice(-which(duplicated(FID)))
+      }
+      # calculate counts of bad fixes for each individual
+      gps_accuracy_sum <- gps_accuracy_check |> group_by(.data[[mt_track_id_column(data)]]) |>
+        summarize(rowCount = n()) |> as.data.frame() |> dplyr::select(-geometry)
+      # calculate total row counts for each individual
+      gps_total_sum <- data |> filter(.data[[mt_track_id_column(data)]] %in% gps_accuracy_sum[,mt_track_id_column(data)]) |> 
+        group_by(.data[[mt_track_id_column(data)]]) |>
+        summarize(totalCount = n()) |> as.data.frame() |> dplyr::select(-geometry)
+      # now add total count to gps_accuarcy_sum
+      gps_accuracy_sum$totalCount <- gps_total_sum$totalCount
+      # now summarize proportion of poor locations
+      prop_bad_locs <- gps_accuracy_sum |> group_by(.data[[mt_track_id_column(data)]]) |>
+        summarise(prop_poor = rowCount/totalCount)
+      # check if any prop_poor is above threshold
+      if(any(prop_bad_locs$prop_poor>gps_accuracy_prop)){
+        prop_bad_ids <- prop_bad_locs |> slice(which(prop_bad_locs$prop_poor>gps_accuracy_prop)) |>
+          # dplyr::select(.data[[mt_track_id_column(data)]])
+          dplyr::select(all_of(mt_track_id_column(data)))
+        # filter data by IDs 
+        gps_accuracy_check <- gps_accuracy_check |> filter(.data[[mt_track_id_column(data)]] %in% prop_bad_ids)
+        # create gps accuracy variable for dataset (note that I changed this from using an event list before)
+        data$gps_accuracy <- FALSE
+        # now set the records that have a gps accuracy event to TRUE
+        data$gps_accuracy[which(data$FID %in% gps_accuracy_check$FID)] = TRUE
+      }
+    }
+  }
+  # alert class 6 = GPS transmission event 
+  if(gps_transmission){
+    # check for events based on timestamp
+    if(gps_transmission_include_current){
+      gps_transmission_check <- data |> 
+        group_by(.data[[mt_track_id_column(data)]]) |> 
+        mutate(time_diff = diff(c(.data[[mt_time_column(data)]],lubridate::with_tz(Sys.time(), "UTC")), units = "days")) |>
+        ungroup()
+    }else
+      if(isFALSE(gps_transmission_include_current)){
+        gps_transmission_check <- data |> 
+          group_by(.data[[mt_track_id_column(data)]]) |> 
+          mutate(time_diff = c(NA,diff(.data[[mt_time_column(data)]], units = "days"))) |>
+          ungroup() |> slice(-1)
+      }
+    # check for time differences greater 
+    if(any(gps_transmission_check$time_diff>gps_transmission_gap)){
+      # filter data by IDs 
+      gps_transmission_check <- gps_transmission_check |> slice(which(gps_transmission_check$time_diff>=gps_transmission_gap))
+      # create gps_transmission variable for dataset (note that I changed this from using an event list before)
+      data$gps_transmission <- FALSE
+      # now set the records that have a gps_transmission event to TRUE
+      data$gps_transmission[which(data$FID %in% gps_transmission_check$FID)] = TRUE
+    }
+  }
+  # check data if there are events 
+  if(any(names(data) %in% c("mortality","cluster","nsd","voltage","gps_accuracy","gps_transmission"))){
+    # store directory for R-related user-specific data in base package
+    temp_path <- tools::R_user_dir("base", which = "data")
+    # create empty list to hold aliases and values
+    alias_list <- list()
+    # write any aliases and values to temp .rds file to use in Shiny app
+    if(any(colnames(data) == "mortality")){
+      alias_list$mortality_alias <- mortality_alias
+      alias_list$mortality_value <- mortality_value
+    }
+    if(any(colnames(data) == "voltage")){
+      alias_list$voltage_alias <- voltage_alias
+      alias_list$voltage_value <- voltage_value
+    }
+    if(any(colnames(data) == "gps_accuracy")){
+      alias_list$gps_accuracy_alias <- gps_accuracy_alias
+      alias_list$gps_accuracy_value <- gps_accuracy_value
+    }
+    # create director for alias_list if it doesn't exist
+    if(isFALSE(dir.exists(paste0(temp_path,"/","alias_folder")))){
+       dir.create(paste0(temp_path,"/","alias_folder"), recursive = TRUE)
+    }
+    # save to alias list to temp_path folder as .rds
+    saveRDS(alias_list, 
+            file = paste0(temp_path,"/","alias_folder/alias_list.rds"))
+    # write alias list as artifact for testing
+    saveRDS(alias_list, file = appArtifactPath("alias_list.rds"))
+    # create event log if log_event = TRUE
+    if(isFALSE(is.null(log_folder))){
+      # create empty list to hold unique event logs
+      event_list = list()
+      # need to build unique ids and notification types
+      if(any(colnames(data)=="mortality")){
+        event_list$mortality <- unique(data[,c(mt_track_id_column(data),"mortality")]) |> filter(mortality == TRUE) |> 
+          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
+        names(event_list$mortality)[2] = "notification_type"
+        event_list$mortality$notification_type = "mortality"
+      }
+      if(any(colnames(data)=="cluster")){
+        event_list$cluster <- unique(data[,c(mt_track_id_column(data),"cluster")]) |> filter(cluster == TRUE) |>
+          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
+        names(event_list$cluster)[2] = "notification_type"
+        event_list$cluster$notification_type = "cluster"
+      }
+      if(any(colnames(data)=="nsd")){
+        event_list$nsd <- unique(data[,c(mt_track_id_column(data),"nsd")]) |> filter(nsd == TRUE) |> 
+          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
+        names(event_list$nsd)[2] = "notification_type"
+        event_list$nsd$notification_type = "nsd"
+      }
+      if(any(colnames(data)=="voltage")){
+        event_list$voltage <- unique(data[,c(mt_track_id_column(data),"voltage")]) |> filter(voltage == TRUE) |> 
+          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
+        names(event_list$voltage)[2] = "notification_type"
+        event_list$voltage$notification_type = "voltage"
+      }
+      if(any(colnames(data)=="gps_accuracy")){
+        event_list$gps_accuracy <- unique(data[,c(mt_track_id_column(data),"gps_accuracy")]) |> filter(gps_accuracy == TRUE) |> 
+          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
+        names(event_list$gps_accuracy)[2] = "notification_type"
+        event_list$gps_accuracy$notification_type = "gps_accuracy"
+      }
+      if(any(colnames(data)=="gps_transmission")){
+        event_list$gps_transmission <- unique(data[,c(mt_track_id_column(data),"gps_transmission")]) |> filter(gps_transmission== TRUE) |> 
+          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
+        names(event_list$gps_transmission)[2] = "notification_type"
+        event_list$gps_transmission$notification_type = "gps_transmission"
+      }
+      # create temp data to extract unique ids and notification types
+      event_log  <- do.call(rbind, event_list)
+      # add current system date
+      event_log$logging_data <- as.character(Sys.Date())
+      # reset row names
+      row.names(event_log) <- 1:nrow(event_log)
+      # create folder in R-related user-specific data location in base package
+      if(isFALSE(dir.exists(paste0(temp_path,"/",paste0("log_",log_folder))))){
+        dir.create(paste0(temp_path,"/",paste0("log_",log_folder)), recursive = TRUE)
+      }
+      # write just this event log if one doesn't already exist
+      if(isFALSE(file.exists(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv")))){
+        write.csv(event_log, 
+                  file = paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"),
+                  row.names = FALSE)
+      }else
+        # append data and write as .csv file to temporary file
+        if(file.exists(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"))){
+          temp_file <- read.csv(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"))
+          write.csv(rbind(temp_file,event_log), paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"),
+                    row.names = FALSE)
+        }
+      # write event log to appArtifactPath to test if they can be retained across runs (can remove this if the solution works)
+      write.csv(read.csv(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv")), file = appArtifactPath("event_log.csv"),
+                row.names = FALSE)
+      # write name of log folder to appArtifactPath
+      write(paste0("log_",log_folder), file = appArtifactPath("log_path.txt"))
+    }
+    # organize and return results
+    logger.info("Alerts were triggered for at least one field. The full dataset will be passed along with these alerts")
+    # now return all items as a list (for now)
+    return(data)
+  }else
+    if(any(names(data) %in% c("mortality","cluster","nsd","voltage","gps_accuracy","gps_transmission"))==FALSE){
+      # return empty list if no events triggered
+      logger.info("No events were triggered given the data and parameters that were set. No alerts were added to the data.")
+    }
+  # end function
+}
+      # fix sequential cluster algorithm using GPSeq_clus
       clust_out <- suppressWarnings(GPSeq_clus(dat = clust_data,
                               search_radius_m = cluster_radius,
                               window_days = cluster_window,
