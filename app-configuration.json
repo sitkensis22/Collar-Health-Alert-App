@@ -1,7 +1,7 @@
 {
     "log_folder": "2133706018",
     "mortality": true,
-    "mortality_alias": "mortality status",
+    "mortality_alias": "mortality_status",
     "mortality_value": "Mortality no radius",
     "cluster": true,
     "cluster_radius": "50",
@@ -12,6 +12,7 @@
     "nsd_value": "1000",
     "nsd_duration": "5",
     "voltage": true,
+    "voltage_alias": "tag_voltage",
     "voltage_value": null,
     "gps_accuracy": true,
     "gps_accuracy_alias": "gps_fix_type_raw",
