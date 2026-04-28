@@ -58,8 +58,8 @@
       "type": "INTEGER"
     },
     {
-      "id": "cluster_mindays",
-      "name": "Minimum cluster days",
+      "id": "cluster_duration",
+      "name": "Minimum cluster duration",
       "description": "Enter an integer for the minimum duration in days as a threshold to include identified cluster events. Note that input will only be used when cluster trigger is activated.",
       "defaultValue": 5,
       "type": "INTEGER"
