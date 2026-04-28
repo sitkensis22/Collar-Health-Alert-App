@@ -88,6 +88,6 @@ The App adds logical (TRUE/FALSE) fields to the input data for each alert class 
 
 **Setting `voltage_alias`:** If the variable(s) is (or are) not present in the input dataset or not provided when the voltage switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variables in the input dataset to confirm their existence and spelling. 
 
-**Setting `gps_accuracy_alias`):** If the variable(s) is (or are) not present in the input dataset or not provided when the GPS accuracy switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variables in the input dataset to confirm their existence and spelling. 
+**Setting `gps_accuracy_alias`:** If the variable(s) is (or are) not present in the input dataset or not provided when the GPS accuracy switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variables in the input dataset to confirm their existence and spelling. 
 
 **Setting `gps_accuracy_value`:** If the value given is not in the variable provided for the `gps_accuracy_alias` or not provided when the GPS accuracy switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variable levels in the input dataset to confirm their existence and spelling.
