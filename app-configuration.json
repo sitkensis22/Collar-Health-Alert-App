@@ -7,7 +7,7 @@
     "cluster_radius": "50",
     "cluster_window": "1",
     "cluster_minlocations": "5",
-    "cluster_mindays": "5",
+    "cluster_duration": "5",
     "nsd": true,
     "nsd_value": "1000",
     "nsd_days": "5",
