@@ -10,7 +10,7 @@
     "cluster_duration": "5",
     "nsd": true,
     "nsd_value": "1000",
-    "nsd_days": "5",
+    "nsd_duration": "5",
     "voltage": true,
     "voltage_value": null,
     "gps_accuracy": true,
