@@ -33,14 +33,17 @@ The App should work for any kind of (location) data.
 ### Settings 
 **Log folder name (`log_folder`):** If this character string is provided, a subdirectory will be created within R base package that is meant to be used in subsequent steps in a workflow for filtering alerts using the Notification Filter App. The event log is necessary to delay alert notifications in the Notification Filter App, Note that if this input is left as null (the default), then no event log will be created. Ideally, the specific study ID is used as the log_folder name, which will allow a unique folder name to be generated. This functionality is still in testing and may be updated.
 
-**Set mortality alert trigger (`mortality`):** The logical indicator acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
+**Set mortality alert trigger (`mortality`):** This logical input acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
 
 **Mortality field name (`mortality_alias`):** This character string is the field name that tracks mortality status in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
 
 **Mortality status value (`mortality_value`):** This character string is the value that indicates that a mortality has occurred for a given location. Note that multiple values may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
 
-**Set cluster alert trigger (`cluster`):**
+**Set cluster alert trigger (`cluster`):** This logical input acts as a switch to turn on cluster event monitoring. 
 
+**Cluster search radius radius ('cluster_radius'):** This numeric value defines the search radius in meters for cluster analysis. Note that the input will only be used when cluster trigger is activated.
+
+**Cluster moving window
 
 
 *Example:* `Radius of resting site` (radius): Defined radius the animal has to stay in for a given duration of time for it to be considered resting site. Unit: `metres`.
