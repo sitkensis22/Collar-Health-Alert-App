@@ -113,13 +113,13 @@ rFunction = function(
                                          Long = X,
                                          Lat = Y)
       # fix sequential cluster algorithm using GPSeq_clus
-      clust_out <- tryCatch(GPSeq_clus(dat = clust_data,
+      clust_out <- suppressWarnings(tryCatch(GPSeq_clus(dat = clust_data,
                               search_radius_m = cluster_radius,
                               window_days = cluster_window,
                               clus_min_locs = cluster_minlocations,                                    
                               centroid_calc = "mean",show_plots = c(FALSE, "mean"),                          
                               store_plots = FALSE, scale_plot_clus = FALSE,prbar=FALSE),
-                              error = function(e) {NULL})
+                              error = function(e) {NULL}))
       if(isFALSE(is.null(clust_out))){
         clust_out[[2]]$clus_dur_day <- clust_out[[2]]$clus_dur_hr
         units(clust_out[[2]]$clus_dur_day) <- "days"
@@ -451,7 +451,7 @@ rFunction = function(
       write(paste0("log_",log_folder), file = appArtifactPath("log_path.txt"))
     }
     # organize and return results
-    logger.info("Alerts were triggered for at least one field. The full dataset will be passed along with these alerts")
+    logger.info("Alerts were triggered for at least one field. The full dataset will be passed along with these alerts.")
     # now return all items as a list (for now)
     return(data)
   }else
