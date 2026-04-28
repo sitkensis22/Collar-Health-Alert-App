@@ -8,7 +8,7 @@ Github repository: *github.com/sitkensis22/Notification-Alert-App* (*https://git
 Generates and appends fields to data for 6 different types of alerts that were developed to monitor collar health: (1) mortality status, (2) cluster analysis, (3) maximum net-squared displacement, (4) voltage levels, (5) GPS accuracy, and (6) GPS transmission gaps.
 
 ## Documentation
-This App provides a variety of tools to monitor collar health and generate alerts that are appended to the user's move2 dataset when present. It was developed to address the challenge of monitoring collars from different vendors within the same study that send out various alerts and require the user to use multple software platforms to monitor collar status and health. Also, rather than rely on other MoveApps in a workflow to provide fields for alerts (e.g., distanceMoved), the App has built-in functinonality to monitor movement anomalies using cluster analysis and calculating the maximum net-squared displacement over a user-provided duration of time. The main output from this app is the move2 dataset with logical (TRUE/FALSE) fields appended for each alert class where the condition is TRUE for locations that meet the alert criteria and FALSE otherwise. For large datasets, the cluster analysis can take considerable time to run, but this function can be switched off using the default setting (`cluster` = false). If a `log_folder` name is provided, then an event log is created and stored within the base package in R for use in the Notification Filter App, which provides the abilty to filter alerts from this App by setting specific time delays or other custom filters. Note this functionality is in testing right now and may need to be updated. Finally, this App was designed as a precusor step in a workflow for the Notificaiton Shiny App that allows the user to visualize the data in Leaflet basemaps, as well as graphical and tabular form.
+This App provides a variety of tools to monitor collar health and generate alerts that are appended to the user's move2 dataset when present. It was developed to address the challenge of monitoring collars from different vendors within the same study that send out various alerts and require the user to use multple software platforms to monitor collar status and health. Also, rather than rely on other MoveApps in a workflow to provide fields for alerts (e.g., distanceMoved), the App has built-in functinonality to monitor movement anomalies using cluster analysis and calculating the maximum net-squared displacement over a user-provided duration of time. For large datasets, the cluster analysis can take considerable time to run, but this function can be switched off using the default setting (`cluster` = false). If a `log_folder` name is provided, then an event log is created and stored within the base package in R for use in the Notification Filter App, which provides the abilty to filter alerts from this App by setting specific time delays or other custom filters. Note this functionality is in testing right now and may need to be updated. Finally, this App was designed as a precusor step in a workflow for the Notificaiton Shiny App that allows the user to visualize the data in Leaflet basemaps, as well as graphical and tabular form.
 
 ### Application scope
 #### Generality of App usability
@@ -17,7 +17,7 @@ This app was developed for any taxinomic group.
 Besides collar health alerts, the cluster analysis functionality in the App could also be used for predation rate studies, especially when combined with the Notification Shiny App. 
 
 #### Required data properties
-The App should work for any kind of (location) data.
+The App should work for any kind of (location) data. However, certain fields will be needed for mortality (e.g., "mortality_status"), voltage (e.g., "tag_voltage"), and GPS accuracy (e.g., "gps_fix_type_raw") monitoring.
 
 ### Input type
 `move2::move2_loc`
@@ -76,22 +76,43 @@ The App should work for any kind of (location) data.
 **Include current date in timestamp (`gps_transmission_include_current`):** This logical input acts will include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that the input will only be used when GPS transmission gap trigger is activated.
 
 ### Changes in output data
-*Specify here how and if the App modifies the input data. Describe clearly what e.g. each additional column means.*
-
-*Examples:*
-
-The App adds to the input data the columns `Max_dist` and `Avg_dist`. They contain the maximum distance to the provided focal location and the average distance to it over all locations. 
-
-The App filterers the input data as selected by the user. 
-
-The output data is the outcome of the model applied to the input data. 
-
-The input data remains unchanged.
+The App adds logical (TRUE/FALSE) fields to the input data for each alert class where the condition is TRUE for locations that meet the alert criteria and FALSE otherwise. Possible fields to be added are: (1) mortality, (2) cluster, (3) nsd, (4) voltage, (5) gps_accuracy, (6) and gps_transmission. Note that these fields are used downstream in other Apps that integrate into a workflow such as the Notification Filter App and Notification Shiny App.
 
 ### Most common errors
-*Please describe shortly what most common errors of the App can be, how they occur and best ways of solving them.*
+**No alert fields appended to dataset:** Cause: None of the alert trigger conditions have been met. Solution: While this is not necessarily an error, check to make sure the desired alert triggers are activated and the settings are entered correctly.
 
 ### Null or error handling
+**Setting `mortality_alias`:**
+
+**Setting `mortality_value`:**
+
+**Setting `cluster_radius`:**
+
+**Setting `cluster_window`:**
+
+**Setting `cluster_minlocations`:** 
+
+**Setting `cluster_duration`:**
+
+**Setting `nsd_value`:**
+
+**Setting `nsd_duration`:**
+
+**Setting `voltage_alias`:**
+
+**Setting `voltage_value`:**
+
+**Setting `gps_accuracy_alias`):**
+
+**Setting `gps_accuracy_value`:**
+
+**Setting `gps_accuracy_prop`:**
+
+**Setting `gps_transmission_gap`:** 
+
+**Setting `gps_transmission_include_current`:** 
+
+
 *Please indicate for each setting as well as the input data which behaviour the App is supposed to show in case of errors or NULL values/input. Please also add notes of possible errors that can happen if settings/parameters are improperly set and any other important information that you find the user should be aware of.*
 
 *Example:* **Setting `radius`:** If no radius AND no duration are given, the input data set is returned with a warning. If no radius is given (NULL), but a duration is defined then a default radius of 1000m = 1km is set. 
