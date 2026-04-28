@@ -82,37 +82,12 @@ The App adds logical (TRUE/FALSE) fields to the input data for each alert class 
 **No alert fields appended to dataset:** Cause: None of the alert trigger conditions have been met. Solution: While this is not necessarily an error, check to make sure the desired alert triggers are activated and the settings are entered correctly.
 
 ### Null or error handling
-**Setting `mortality_alias`:**
+**Setting `mortality_alias`:** If the variable(s) is (or are) not present in the input dataset or not provided when the mortality switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variables in the input dataset to confirm their existence and spelling. 
 
-**Setting `mortality_value`:**
+**Setting `mortality_value`:** If the value given is not in the variable provided for the `mortality_alias` or not provided when the mortality switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variable levels in the input dataset to confirm their existence and spelling.
 
-**Setting `cluster_radius`:**
+**Setting `voltage_alias`:** If the variable(s) is (or are) not present in the input dataset or not provided when the voltage switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variables in the input dataset to confirm their existence and spelling. 
 
-**Setting `cluster_window`:**
+**Setting `gps_accuracy_alias`):** If the variable(s) is (or are) not present in the input dataset or not provided when the GPS accuracy switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variables in the input dataset to confirm their existence and spelling. 
 
-**Setting `cluster_minlocations`:** 
-
-**Setting `cluster_duration`:**
-
-**Setting `nsd_value`:**
-
-**Setting `nsd_duration`:**
-
-**Setting `voltage_alias`:**
-
-**Setting `voltage_value`:**
-
-**Setting `gps_accuracy_alias`):**
-
-**Setting `gps_accuracy_value`:**
-
-**Setting `gps_accuracy_prop`:**
-
-**Setting `gps_transmission_gap`:** 
-
-**Setting `gps_transmission_include_current`:** 
-
-
-*Please indicate for each setting as well as the input data which behaviour the App is supposed to show in case of errors or NULL values/input. Please also add notes of possible errors that can happen if settings/parameters are improperly set and any other important information that you find the user should be aware of.*
-
-*Example:* **Setting `radius`:** If no radius AND no duration are given, the input data set is returned with a warning. If no radius is given (NULL), but a duration is defined then a default radius of 1000m = 1km is set. 
+**Setting `gps_accuracy_value`:** If the value given is not in the variable provided for the `gps_accuracy_alias` or not provided when the GPS accuracy switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variable levels in the input dataset to confirm their existence and spelling.
