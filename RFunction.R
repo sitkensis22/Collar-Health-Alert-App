@@ -425,7 +425,7 @@ rFunction = function(
       # create temp data to extract unique ids and notification types
       event_log  <- do.call(rbind, event_list)
       # add current system date
-      event_log$logging_data <- as.character(Sys.Date())
+      event_log$logging_date <- as.character(Sys.Date())
       # reset row names
       row.names(event_log) <- 1:nrow(event_log)
       # create folder in R-related user-specific data location in base package
