@@ -70,90 +70,91 @@
       "description": "Please check this box if you want to check for maximum net-squared displacement events in based on specific parameters.",
       "defaultValue": false,
       "type": "CHECKBOX"
-    {
-      "id": "nsd_value",
-      "name": "Threshold for maximum net-squared displacement",
-      "description": "Enter a numeric value for the area in square meters as a threshold for the maximum net-squared displacement. Note that input will only be used when nsd trigger is activiated.",
-      "defaultValue": 1000,
-      "type": "DOUBLE"
     },
-    {
-      "id": "nsd_duration",
-      "name": "Net-squared displacement duration",
-      "description": "Enter an integer value for number of days to summarize the maximum net-squared displacement over. Note that input will only be used when nsd trigger is activiated.",
-      "defaultValue": 5,
-      "type": "INTEGER"
-    },  
-    {
-      "id": "voltage",
-      "name": "Set low voltage alert trigger?",
-      "description": "Please check this box if you want to check for low voltage conditions events.",
-      "defaultValue": false,
-      "type": "CHECKBOX"
-    },
-    {
-      "id": "voltage_alias",
-      "name": "Voltage field name",
-      "description": "Enter field name(s) that tracks voltage in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if voltage trigger is activated.",
-      "defaultValue": null,
-      "type": "STRING"
-    }, 
-    {
-      "id": "voltage_value",
-      "name": "Minimum voltage threshold",
-      "description": "Enter a numeric value for the threshold to trigger a voltage alert. if the value is > 0 and < 1, the quartile function will be used to determine the threshold. If the default value is used (null), the first quartile (0.25) will be applied. Note that input will only be used when voltage trigger is activiated.",
-      "defaultValue": null,
-      "type": "DOUBLE"
-    },  
-    {
-      "id": "gps_accuracy",
-      "name": "Set GPS accuracy alert trigger?",
-      "description": "Please check this box if you want to check for poor GPS accuracy condition events.",
-      "defaultValue": false,
-      "type": "CHECKBOX"
-    }, 
-    {
-      "id": "gps_accuracy_alias",
-      "name": "GPS accuracy field name",
-      "description": "Enter field name(s) that tracks GPS accuracy in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
-      "defaultValue": null,
-      "type": "STRING"
-    },
-    {
-      "id": "gps_accuracy_value",
-      "name": "GPS accuracy value",
-      "description": "Enter character string of field that indicates a missed location or poor GPS accuracy has occurred. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one GPS accuracy value indicates a missed location or poor GPS accuracy has occured. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
-      "defaultValue": null,
-      "type": "STRING"
-    },
-    {
-      "id": "gps_accuracy_prop",
-      "name": "Minimum proportion threshold",
-      "description": "Enter a numeric value for the proportion of missed locations or poor GPS accuracy as a threshold to trigger an event. Note that input will only be used when GPS accuracy is activiated.",
-      "defaultValue": 0.10,
-      "type": "DOUBLE"
-    },  
-    {
-      "id": "gps_transmission",
-      "name": "Set GPS transmission alert trigger?",
-      "description": "Please check this box if you want to check GPS transmission anomalies.",
-      "defaultValue": false,
-      "type": "CHECKBOX"
-    },  
-    {
-      "id": "gps_transmission_gap",
-      "name": "GPS transmission gap value",
-      "description": "Enter an integer value for the gap in days to trigger a GPS transmission alter. Note that input will only be used when the GPS transmission trigger is activiated.",
-      "defaultValue": 5,
-      "type": "INTEGER"
-    },   
-    {
-      "id": "gps_transmission_include_current",
-      "name": "Include current date in timestamp?",
-      "description": "Please check this box if you want to include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that input will only be used when the GPS transmission trigger is activiated.",
-      "defaultValue": false,
-      "type": "CHECKBOX"
-    }     
+      {
+        "id": "nsd_value",
+        "name": "Threshold for maximum net-squared displacement",
+        "description": "Enter a numeric value for the area in square meters as a threshold for the maximum net-squared displacement. Note that input will only be used when nsd trigger is activiated.",
+        "defaultValue": 1000,
+        "type": "DOUBLE"
+      },
+      {
+        "id": "nsd_duration",
+        "name": "Net-squared displacement duration",
+        "description": "Enter an integer value for number of days to summarize the maximum net-squared displacement over. Note that input will only be used when nsd trigger is activiated.",
+        "defaultValue": 5,
+        "type": "INTEGER"
+      },  
+      {
+        "id": "voltage",
+        "name": "Set low voltage alert trigger?",
+        "description": "Please check this box if you want to check for low voltage conditions events.",
+        "defaultValue": false,
+        "type": "CHECKBOX"
+      },
+      {
+        "id": "voltage_alias",
+        "name": "Voltage field name",
+        "description": "Enter field name(s) that tracks voltage in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if voltage trigger is activated.",
+        "defaultValue": null,
+        "type": "STRING"
+      }, 
+      {
+        "id": "voltage_value",
+        "name": "Minimum voltage threshold",
+        "description": "Enter a numeric value for the threshold to trigger a voltage alert. if the value is > 0 and < 1, the quartile function will be used to determine the threshold. If the default value is used (null), the first quartile (0.25) will be applied. Note that input will only be used when voltage trigger is activiated.",
+        "defaultValue": null,
+        "type": "DOUBLE"
+      },  
+      {
+        "id": "gps_accuracy",
+        "name": "Set GPS accuracy alert trigger?",
+        "description": "Please check this box if you want to check for poor GPS accuracy condition events.",
+        "defaultValue": false,
+        "type": "CHECKBOX"
+      }, 
+      {
+        "id": "gps_accuracy_alias",
+        "name": "GPS accuracy field name",
+        "description": "Enter field name(s) that tracks GPS accuracy in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
+        "defaultValue": null,
+        "type": "STRING"
+      },
+      {
+        "id": "gps_accuracy_value",
+        "name": "GPS accuracy value",
+        "description": "Enter character string of field that indicates a missed location or poor GPS accuracy has occurred. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one GPS accuracy value indicates a missed location or poor GPS accuracy has occured. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
+        "defaultValue": null,
+        "type": "STRING"
+      },
+      {
+        "id": "gps_accuracy_prop",
+        "name": "Minimum proportion threshold",
+        "description": "Enter a numeric value for the proportion of missed locations or poor GPS accuracy as a threshold to trigger an event. Note that input will only be used when GPS accuracy is activiated.",
+        "defaultValue": 0.10,
+        "type": "DOUBLE"
+      },  
+      {
+        "id": "gps_transmission",
+        "name": "Set GPS transmission alert trigger?",
+        "description": "Please check this box if you want to check GPS transmission anomalies.",
+        "defaultValue": false,
+        "type": "CHECKBOX"
+      },  
+      {
+        "id": "gps_transmission_gap",
+        "name": "GPS transmission gap value",
+        "description": "Enter an integer value for the gap in days to trigger a GPS transmission alter. Note that input will only be used when the GPS transmission trigger is activiated.",
+        "defaultValue": 5,
+        "type": "INTEGER"
+      },   
+      {
+        "id": "gps_transmission_include_current",
+        "name": "Include current date in timestamp?",
+        "description": "Please check this box if you want to include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that input will only be used when the GPS transmission trigger is activiated.",
+        "defaultValue": false,
+        "type": "CHECKBOX"
+      }     
   ],
   "dependencies": {
     "R": [
@@ -183,7 +184,7 @@
       },
       {
         "remotes": "install_github('cran/GPSeqClus')"
-      },
+      }
     ]
   },
   "license": {
@@ -211,7 +212,7 @@
         "creator"
       ],
       "orcid": "0000-0003-0194-0726",
-      "affiliation": "Taurus Wildlife Consulting",
+      "affiliation": "Taurus Wildlife Consulting"
     }
   ],
   "funding": [
