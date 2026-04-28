@@ -22,7 +22,7 @@ rFunction = function(
   cluster_radius = 50, # search radius in meters when using cluster analysis
   cluster_window = 1, # moving window length when using cluster analysis
   cluster_minlocations = 5, # minimum number of locations when using cluster analysis
-  cluster_mindays = 5, # minimum number of cluster duration in days to include as event
+  cluster_duration = 5, # minimum number of cluster duration in days to include as event
   # alert class 3 = nsd event
   nsd = FALSE, # include net-squared displacement to detect events?
   nsd_value = 1000, # area in square meters as a minimum threshold based on daily NSD to have an event
@@ -122,9 +122,9 @@ rFunction = function(
       clust_out[[2]]$clus_dur_day <- clust_out[[2]]$clus_dur_hr
       units(clust_out[[2]]$clus_dur_day) <- "days"
       # check for minimum number of cluster days
-      if(any(clust_out[[2]]$clus_dur_day > cluster_mindays)){
+      if(any(clust_out[[2]]$clus_dur_day > cluster_duration)){
         # filter for minimum number of cluster days
-        clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_mindays)
+        clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_duration)
         # add cluster ID field to data
         data$clus_ID <- clust_out[[1]]$clus_ID
         # filter data based on cluster IDs in clust_out[[2]]
