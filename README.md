@@ -33,13 +33,13 @@ The App should work for any kind of (location) data.
 ### Settings 
 **Log folder name (`log_folder`):** If this character string input is provided, a subdirectory will be created within R base package that is meant to be used in subsequent steps in a workflow for filtering alerts using the Notification Filter App. The event log is necessary to delay alert notifications in the Notification Filter App, Note that if this input is left as null (the default), then no event log will be created. Ideally, the specific study ID is used as the log_folder name, which will allow a unique folder name to be generated. This functionality is still in testing and may be updated.
 
-**Set mortality alert trigger (`mortality`):** This logical input acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
+**Set mortality alert (`mortality`):** This logical input acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
 
-**Mortality field name (`mortality_alias`):** This character string input is the field name that tracks mortality status in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
+**Mortality field name (`mortality_alias`):** This character string input is the field name that tracks mortality status in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. Multiple values must be comma-separated. The field is ignored if the mortality alert is not activated.
 
-**Mortality status value (`mortality_value`):** This character string input is the value that indicates that a mortality has occurred for a given location. Note that multiple values may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. The field is ignored is the mortality alert is not activated.
+**Mortality status value (`mortality_value`):** This character string input is the value that indicates that a mortality has occurred for a given location. Note that multiple values may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. Multiple values must be comma-separated. The field is ignored if the mortality alert is not activated.
 
-**Set cluster alert trigger (`cluster`):** This logical input acts as a switch to turn on cluster event monitoring. 
+**Set cluster alert (`cluster`):** This logical input acts as a switch to turn on cluster event monitoring. 
 
 **Cluster search radius (`cluster_radius`):** This numeric input defines the search radius in meters for cluster analysis. Note that the input will only be used when cluster trigger is activated.
 
@@ -49,17 +49,27 @@ The App should work for any kind of (location) data.
 
 **Minimum cluster duration (`cluster_duration`):** This integer input defines the mimimum duration in days as a threshold to include idenfied cluster events. This is useful when using cluster analysis to detect mortalties when many short duration clusters are present. Note that the input will only be used when cluster trigger is activated.
 
-**Set net-squared displacement alert trigger (`nsd`):** This logical input acts as a switch to turn on maximum net-squared displacement event monitoring.
+**Set net-squared displacement alert (`nsd`):** This logical input acts as a switch to turn on maximum net-squared displacement event monitoring.
 
 **Threshold for maximum net-squared displacement (`nsd_value`):** This numeric input defines the threshold in square meters for the maximum net-squared displacement to trigger an event. Note that the input will only be used when net-squared displacement trigger is activated.
 
 **Net-squared displacement duration (`nsd_duration`):** This integer input defines the duration of days to summarize the maximum net-squared displacement over. Note that the input will only be used when net-squared displacement trigger is activated.
 
-**Set voltage alert trigger (`voltage`):** This logical input acts as a switch to turn on voltage condition monitoring.
+**Set voltage alert (`voltage`):** This logical input acts as a switch to turn on voltage condition monitoring.
 
-**Voltage field name (`voltage_alias`):** This character string input is the field name that tracks voltage in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different voltage fields. The field is ignored is the voltage alert is not activated.
+**Voltage field name (`voltage_alias`):** This character string input is the field name that tracks voltage in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different voltage fields. Multiple values must be comma-separated. The field is ignored if the voltage alert is not activated.
 
-**Voltage field name (`voltage_value`):** This numeric input is the threshold to trigger a voltage event. If the value is > 0 and < 1, then the quartile function is used to determine the voltage threshold to trigger an event. If the default value is used (i.e., `voltage_value` = NULL), the first quartile (0.25) will be applied. Otherwise an input value > 1 will be the threshold to trigger a voltage event. The units for voltage are assumed to be in millivolts (mV), but some collars or tags may have different units. Thus, it may be advantageous to use the default first quartile setting or set a quantile between 0 and 1 (e.g., 0.10) in these cases. This is also recommended when different collar types are deployed within the same study and voltage is on vastly different scales. The field is ignored is the voltage alert is not activated.
+**Minimum voltage threshold (`voltage_value`):** This numeric input is the threshold to trigger a voltage event. If the value is > 0 and < 1, then the quartile function is used to determine the voltage threshold to trigger an event. If the default value is used (i.e., `voltage_value` = NULL), the first quartile (0.25) will be applied. Otherwise an input value > 1 will be the threshold to trigger a voltage event. The units for voltage are assumed to be in millivolts (mV), but some collars or tags may have different units. Thus, it may be advantageous to use the default first quartile setting or set a quantile between 0 and 1 (e.g., 0.10) in these cases. This is also recommended when different collar types are deployed within the same study and voltage is on vastly different scales. The field is ignored if the voltage alert is not activated.
+
+**Set GPS accuracy alert (`gps_accuracy`):** This logical input acts as a switch to turn on GPS accuracy monitoring.
+
+**GPS accuracy field name (`gps_accuracy_alias`):** This character string input is the field name that tracks GPS accuracy in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different GPS accuracy fields. Multiple values must be comma-separated. The field is ignored if the GPS accuracy alert is not activated.
+
+**GPS accuracy value (`gps_accuracy_value`):** This character string input is the value that indicates that a missed location or poor GPS accuracy has occurred. Note that multiple values may be provided to accomodate datasets that are from multiple collar vendors and more than one GPS accuracy value indicates a missed location or poor GPS accuracy has occured. Multiple values must be comma-separated. The field is ignored if the GPS accuracy alert is not activated.
+
+**Minimum proportion threshold (`gps_accuracy_prop`):** This numeric input is for the proportion of missed locations or poor GPS accuracy as a threshold to trigger a GPS accuracy event. The field is ignored if the GPS accuracy alert is not activated.
+
+
 
 *Example:* `Radius of resting site` (radius): Defined radius the animal has to stay in for a given duration of time for it to be considered resting site. Unit: `metres`.
 
