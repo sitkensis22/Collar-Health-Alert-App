@@ -41,7 +41,7 @@ The App should work for any kind of (location) data.
 
 **Set cluster alert trigger (`cluster`):** This logical input acts as a switch to turn on cluster event monitoring. 
 
-**Cluster search radius radius (`cluster_radius`):** This numeric input defines the search radius in meters for cluster analysis. Note that the input will only be used when cluster trigger is activated.
+**Cluster search radius (`cluster_radius`):** This numeric input defines the search radius in meters for cluster analysis. Note that the input will only be used when cluster trigger is activated.
 
 **Cluster moving window (`cluster_window`):** This integer input defines the number of days for the moving window analysis in determining clusters. Note that the input will only be used when cluster trigger is activated.
 
