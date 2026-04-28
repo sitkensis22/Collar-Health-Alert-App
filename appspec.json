@@ -78,7 +78,7 @@
       "type": "DOUBLE"
     },
     {
-      "id": "nsd_days",
+      "id": "nsd_duration",
       "name": "Net-squared displacement duration",
       "description": "Enter an integer value for number of days to summarize the maximum net-squared displacement over. Note that input will only be used when nsd trigger is activiated.",
       "defaultValue": 5,
