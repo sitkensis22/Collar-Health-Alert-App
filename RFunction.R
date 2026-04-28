@@ -113,12 +113,12 @@ rFunction = function(
                                          Long = X,
                                          Lat = Y)
       # fix sequential cluster algorithm using GPSeq_clus
-      clust_out <- GPSeq_clus(dat = clust_data,
+      clust_out <- suppressWarnings(GPSeq_clus(dat = clust_data,
                               search_radius_m = cluster_radius,
                               window_days = cluster_window,
                               clus_min_locs = cluster_minlocations,                                    
                               centroid_calc = "mean",show_plots = c(FALSE, "mean"),                          
-                              store_plots = FALSE, scale_plot_clus = FALSE,prbar=FALSE)
+                              store_plots = FALSE, scale_plot_clus = FALSE,prbar=FALSE))
       clust_out[[2]]$clus_dur_day <- clust_out[[2]]$clus_dur_hr
       units(clust_out[[2]]$clus_dur_day) <- "days"
       # check for minimum number of cluster days
@@ -189,20 +189,22 @@ rFunction = function(
       logger.warn(paste("Voltage alias(es) not found in dataset:",alias_not_found))
     }
     # subset records by user-provided voltage values
-    if(isFALSE(is.null(voltage_value)) & voltage_value >= 1){ 
-      voltage_check <- data |> 
-        pivot_longer(cols = all_of(voltage_alias), 
-                     names_to = "alias", 
-                     values_to = "alias_vals") |> 
-        mutate(alias_vals = set_units(alias_vals, mV)) |>
-        group_by(mt_track_id_column(data)) |> 
-        filter(alias_vals <= set_units(voltage_value, mV)) |>
-        mutate(tag_voltage = alias_vals) |> 
-        dplyr::select(-alias,-alias_vals) |>
-        ungroup()  
-    }else
+    if(isFALSE(is.null(voltage_value))){ 
+      # nest these ifelse statements to avoid error
+       if(voltage_value >= 1){
+        voltage_check <- data |> 
+          pivot_longer(cols = all_of(voltage_alias), 
+                       names_to = "alias", 
+                       values_to = "alias_vals") |> 
+          mutate(alias_vals = set_units(alias_vals, mV)) |>
+          group_by(mt_track_id_column(data)) |> 
+          filter(alias_vals <= set_units(voltage_value, mV)) |>
+          mutate(tag_voltage = alias_vals) |> 
+          dplyr::select(-alias,-alias_vals) |>
+          ungroup()  
+      }else
       # use given quantile value if voltage_value < 1  
-      if(isFALSE(is.null(voltage_value)) & voltage_value < 1){  # need to fix this to test for NULL
+      if(voltage_value < 1){  # need to fix this to test for NULL
         voltage_check <- data |> 
           pivot_longer(cols = all_of(voltage_alias), 
                        names_to = "alias", 
@@ -212,7 +214,8 @@ rFunction = function(
           filter(alias_vals <= set_units(as.numeric(quantile(alias_vals, probs = voltage_value, na.rm = TRUE)), mV)) |>
           mutate(tag_voltage = alias_vals) |> 
           dplyr::select(-alias,-alias_vals) |>
-          ungroup()   
+          ungroup()
+       }
       }else
         # subset records by first quantile of voltage values
         if(is.null(voltage_value)){ # need to fix this to test for NULL
@@ -351,10 +354,6 @@ rFunction = function(
   if(any(names(data) %in% c("mortality","cluster","nsd","voltage","gps_accuracy","gps_transmission"))){
     # store directory for R-related user-specific data in base package
     temp_path <- tools::R_user_dir("base", which = "data")
-    # create folder in R-related user-specific data location in base package
-    if(isFALSE(dir.exists(paste0(temp_path,"/",paste0("log_",log_folder))))){
-      dir.create(paste0(temp_path,"/",paste0("log_",log_folder)))
-    }
     # create empty list to hold aliases and values
     alias_list <- list()
     # write any aliases and values to temp .rds file to use in Shiny app
@@ -370,11 +369,15 @@ rFunction = function(
       alias_list$gps_accuracy_alias <- gps_accuracy_alias
       alias_list$gps_accuracy_value <- gps_accuracy_value
     }
+    # create director for alias_list if it doesn't exist
+    if(isFALSE(dir.exists(paste0(temp_path,"/","alias_folder")))){
+       dir.create(paste0(temp_path,"/","alias_folder"), recursive = TRUE)
+    }
     # save to alias list to temp_path folder as .rds
     saveRDS(alias_list, 
             file = paste0(temp_path,"/","alias_folder/alias_list.rds"))
     # write alias list as artifact for testing
-    saveRDS(alias_list, file = appArtificatPath("alias_list.rds"))
+    saveRDS(alias_list, file = appArtifactPath("alias_list.rds"))
     # create event log if log_event = TRUE
     if(isFALSE(is.null(log_folder))){
       # create empty list to hold unique event logs
@@ -422,6 +425,10 @@ rFunction = function(
       event_log$logging_data <- as.character(Sys.Date())
       # reset row names
       row.names(event_log) <- 1:nrow(event_log)
+      # create folder in R-related user-specific data location in base package
+      if(isFALSE(dir.exists(paste0(temp_path,"/",paste0("log_",log_folder))))){
+        dir.create(paste0(temp_path,"/",paste0("log_",log_folder)), recursive = TRUE)
+      }
       # write just this event log if one doesn't already exist
       if(isFALSE(file.exists(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv")))){
         write.csv(event_log, 
@@ -438,7 +445,7 @@ rFunction = function(
       write.csv(read.csv(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv")), file = appArtifactPath("event_log.csv"),
                 row.names = FALSE)
       # write name of log folder to appArtifactPath
-      write(paste0("log_",log_folder), file = appArtificatPath("log_path.txt"))
+      write(paste0("log_",log_folder), file = appArtifactPath("log_path.txt"))
     }
     # organize and return results
     logger.info("Alerts were triggered for at least one field. The full dataset will be passed along with these alerts")
