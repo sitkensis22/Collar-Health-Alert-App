@@ -26,7 +26,7 @@ rFunction = function(
   # alert class 3 = nsd event
   nsd = FALSE, # include net-squared displacement to detect events?
   nsd_value = 1000, # area in square meters as a minimum threshold based on daily NSD to have an event
-  nsd_days = 5, # number of days to summarize maximum NSD over
+  nsd_duration = 5, # number of days to summarize maximum NSD over
   # alert class 4 = collar voltage event
   voltage = FALSE, # check for low voltage levels in collar
   voltage_alias = NULL, # name of voltage field to check (can be more than one name)
@@ -154,7 +154,7 @@ rFunction = function(
         amt::make_track(.x = x, .y = y, .t = t,
                         id = id,crs = utm_crs)
       # create variable for user-defined number of days
-      day_interval <- ifelse(nsd_days > 1, paste(nsd_days,"days"), paste(nsd_days,"day"))
+      day_interval <- ifelse(nsd_duration > 1, paste(nsd_duration,"days"), paste(nsd_duration,"day"))
       # create index for group over a user-defined number of days
       amt_track <- amt_track |> mutate(day = lubridate::date(t_)) |> group_by(id) |>
         mutate(day_index = as.factor(ifelse(is.na(as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))),
