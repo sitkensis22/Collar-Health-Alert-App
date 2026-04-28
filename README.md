@@ -69,9 +69,11 @@ The App should work for any kind of (location) data.
 
 **Minimum proportion threshold (`gps_accuracy_prop`):** This numeric input is for the proportion of missed locations or poor GPS accuracy as a threshold to trigger a GPS accuracy event. The field is ignored if the GPS accuracy alert is not activated.
 
+**Set GPS transmission alert (`GPS transmission gap`):** This logical input acts as a switch to turn on GPS transmission gap monitoring.
 
+**GPS transmission gap value (`gps_transmission_gap`):** This integer input defines the gap in days to trigger a GPS transmission event. Note that the input will only be used when GPS transmission gap trigger is activated.
 
-*Example:* `Radius of resting site` (radius): Defined radius the animal has to stay in for a given duration of time for it to be considered resting site. Unit: `metres`.
+**Include current date in timestamp (`gps_transmission_include_current`):** This logical input acts will include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that the input will only be used when GPS transmission gap trigger is activated.
 
 ### Changes in output data
 *Specify here how and if the App modifies the input data. Describe clearly what e.g. each additional column means.*
