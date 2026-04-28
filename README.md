@@ -49,7 +49,11 @@ The App should work for any kind of (location) data.
 
 **Minimum cluster duration (`cluster_duration`):** This integer input defines the mimimum duration in days as a threshold to include idenfied cluster events. This is useful when using cluster analysis to detect mortalties when many short duration clusters are present. Note that the input will only be used when cluster trigger is activated.
 
-**Set cluster alert trigger (`cluster`):** This logical input acts as a switch to turn on cluster event monitoring.
+**Set net-squared displacement alert trigger (`nsd`):** This logical input acts as a switch to turn on maximum net-squared displacement event monitoring.
+
+**Threshold for maximum net-squared displacement (`nsd_value`):** This numeric input defines the threshold in square meters for the maximum net-squared displacement to trigger an event. Note that the input will only be used when net-squared displacement trigger is activated.
+
+**Net-squared displacement duration (`nsd_duration`):** This integer input
 
 *Example:* `Radius of resting site` (radius): Defined radius the animal has to stay in for a given duration of time for it to be considered resting site. Unit: `metres`.
 
