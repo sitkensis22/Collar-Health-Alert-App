@@ -53,7 +53,13 @@ The App should work for any kind of (location) data.
 
 **Threshold for maximum net-squared displacement (`nsd_value`):** This numeric input defines the threshold in square meters for the maximum net-squared displacement to trigger an event. Note that the input will only be used when net-squared displacement trigger is activated.
 
-**Net-squared displacement duration (`nsd_duration`):** This integer input
+**Net-squared displacement duration (`nsd_duration`):** This integer input defines the duration of days to summarize the maximum net-squared displacement over. Note that the input will only be used when net-squared displacement trigger is activated.
+
+**Set voltage alert trigger (`voltage`):** This logical input acts as a switch to turn on voltage condition monitoring.
+
+**Voltage field name (`voltage_alias`):** This character string input is the field name that tracks voltage in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different voltage fields. The field is ignored is the voltage alert is not activated.
+
+**Voltage field name (`voltage_value`):** This numeric input is the threshold to trigger a voltage event. If the value is > 0 and < 1, then the quartile function is used to determine the voltage threshold to trigger an event. If the default value is used (i.e., `voltage_value` = NULL), the first quartile (0.25) will be applied. Otherwise an input value > 1 will be the threshold to trigger a voltage event. The units for voltage are assumed to be in millivolts (mV), but some collars or tags may have different units. Thus, it may be advantageous to use the default first quartile setting or set a quantile between 0 and 1 (e.g., 0.10) in these cases. This is also recommended when different collar types are deployed within the same study and voltage is on vastly different scales. The field is ignored is the voltage alert is not activated.
 
 *Example:* `Radius of resting site` (radius): Defined radius the animal has to stay in for a given duration of time for it to be considered resting site. Unit: `metres`.
 
