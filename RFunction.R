@@ -1,9 +1,9 @@
 library("amt")
+library("ctmm")
 library("GPSeqClus")
 library("move2")
 library("sf")
 library("tidyverse")
-library("tools")
 library("units")
 
 ## The parameter "data" is reserved for the data object passed on from the previous app
@@ -158,6 +158,10 @@ rFunction = function(
                         id = id,crs = utm_crs)
       # create variable for user-defined number of days
       day_interval <- ifelse(nsd_duration > 1, paste(nsd_duration,"days"), paste(nsd_duration,"day"))
+      # need to check for individuals that have a shorter duration of data than the day interval
+      amt_track <- amt_track |> group_by(id) |> mutate(date_range = max(timestamp) - min(timestamp)) |> ungroup()
+      # now filter out inddividuals where data_range is less than day_interval
+      amt_track <- amt_track |> filter(date_range > as.difftime(nsd_duration, units = "days"))
       # create index for group over a user-defined number of days
       amt_track <- amt_track |> mutate(day = lubridate::date(t_)) |> group_by(id) |>
         mutate(day_index = as.factor(ifelse(is.na(as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))),
@@ -344,7 +348,7 @@ rFunction = function(
           ungroup() |> slice(-1)
       }
     # check for time differences greater 
-    if(any(gps_transmission_check$time_diff>gps_transmission_gap)){
+    if(any(gps_transmission_check$time_diff>gps_transmission_gap, na.rm = TRUE)){
       # filter data by IDs 
       gps_transmission_check <- gps_transmission_check |> slice(which(gps_transmission_check$time_diff>=gps_transmission_gap))
       # create gps_transmission variable for dataset (note that I changed this from using an event list before)
