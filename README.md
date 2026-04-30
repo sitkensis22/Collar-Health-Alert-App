@@ -8,7 +8,7 @@ Github repository: *github.com/sitkensis22/Notification-Alert-App* (*https://git
 Generates and appends fields to data for 6 different types of alerts that were developed to monitor collar health: (1) mortality status, (2) cluster analysis, (3) maximum net-squared displacement, (4) voltage levels, (5) GPS accuracy, and (6) GPS transmission gaps.
 
 ## Documentation
-This App provides a variety of tools to monitor collar health and generate alerts that are appended to the user's move2 dataset when present. It was developed to address the challenge of monitoring collars from different vendors within the same study that send out various alerts and require the user to use multple software platforms to monitor collar status and health. Also, rather than rely on other MoveApps in a workflow to provide fields for alerts (e.g., distanceMoved), the App has built-in functinonality to monitor movement anomalies using cluster analysis and calculating the maximum net-squared displacement over a user-provided duration of time. For large datasets, the cluster analysis can take considerable time to run, but this function can be switched off using the default setting (`cluster` = FALSE). If a `log_folder` name is provided, then an event log is created and stored within the base package in R for use in the Notification Filter App, which provides the abilty to filter alerts from this App by setting specific time delays or other custom filters. Note this functionality is in testing right now and may need to be updated. Finally, this App was designed as a precusor step in a workflow for the Notificaiton Shiny App that allows the user to visualize the data in Leaflet basemaps, as well as graphical and tabular form.
+This App provides a variety of tools to monitor collar health and generate alerts that are appended to the user's move2 dataset when present. It was developed to address the challenge of monitoring collars from different vendors within the same study that send out various alerts and require the user to use multple software platforms to monitor collar status and health. Also, rather than rely on other MoveApps in a workflow to provide fields for alerts (e.g., distanceMoved), the App has built-in functinonality to monitor movement anomalies using cluster analysis and calculating the maximum net-squared displacement over a user-provided duration of time. For large datasets, the cluster analysis can take considerable time to run, but this function can be switched off using the default setting (`cluster` = FALSE). Finally, this App was designed as a precusor step in a workflow for the Notificaiton Shiny App that allows the user to visualize the data in Leaflet basemaps, as well as graphical and tabular form.
 
 ### Application scope
 #### Generality of App usability
@@ -26,13 +26,9 @@ The App should work for any kind of (location) data. However, certain fields wil
 `move2::move2_loc`
 
 ### Artefacts
-`log_path.txt`: txt-file with name of event log folder. Note this file is only output as an artefact for testing at this point in development.
-
-`alias_list.rds`: rds-file with alias fields and values used for mortality, voltage, and gps_accuracy for use in Notification Shiny App. Note this file is only output as an artefact for testing at this point in development.
+No artefacts are generated. 
 
 ### Settings 
-**Log folder name (`log_folder`):** If this character string input is provided, a subdirectory will be created within R base package that is meant to be used in subsequent steps in a workflow for filtering alerts using the Notification Filter App. The event log is necessary to delay alert notifications in the Notification Filter App, Note that if this input is left as null (the default), then no event log will be created. Ideally, the specific study ID is used as the log_folder name, which will allow a unique folder name to be generated. This functionality is still in testing and may be updated.
-
 **Set mortality alert (`mortality`):** This logical input acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
 
 **Mortality field name (`mortality_alias`):** This character string input is the field name that tracks mortality status in the dataset. Note that multiple fields may be provided to accomodate datasets that are from multiple collar vendors with different mortality status fields. Multiple values must be comma-separated. The field is ignored if the mortality alert is not activated.
