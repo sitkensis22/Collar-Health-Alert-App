@@ -2,13 +2,6 @@
   "version": "1.1",
   "settings": [
     {
-      "id": "log_folder",
-      "name": "Log folder name",
-      "description": "Enter a unique name to create an event log folder. Note that no event log will be created if log folder name is set to default (null). The event log is used in the Notification Filter App to set delays.",
-      "defaultValue": null,
-      "type": "STRING"
-    },
-    {
       "id": "mortality",
       "name": "Set mortality alert trigger?",
       "description": "Please check this box if you want to check for mortality events in a manufacturer-provided field.",
