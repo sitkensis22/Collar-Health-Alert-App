@@ -12,7 +12,6 @@ library("units")
 rFunction = function(
   # data input (move2 object)
   data, # move2 data
-  log_folder = NULL, # create a subdirectory to store the log file for this project (if left NULL, events will not be logged)
   # alert class 1 = manufacturer notification of mortality event
   mortality = FALSE, # include a manufacturer mortality notification event field?
   mortality_alias = NULL, # name of variable that tracks mortality status (can be more than one name)
@@ -383,77 +382,6 @@ rFunction = function(
     # save to alias list to temp_path folder as .rds
     saveRDS(alias_list, 
             file = paste0(temp_path,"/","alias_folder/alias_list.rds"))
-    # write alias list as artifact for testing
-    saveRDS(alias_list, file = appArtifactPath("alias_list.rds"))
-    # create event log if log_event = TRUE
-    if(isFALSE(is.null(log_folder))){
-      # create empty list to hold unique event logs
-      event_list = list()
-      # need to build unique ids and notification types
-      if(any(colnames(data)=="mortality")){
-        event_list$mortality <- unique(data[,c(mt_track_id_column(data),"mortality")]) |> filter(mortality == TRUE) |> 
-          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
-        names(event_list$mortality)[2] = "notification_type"
-        event_list$mortality$notification_type = "mortality"
-      }
-      if(any(colnames(data)=="cluster")){
-        event_list$cluster <- unique(data[,c(mt_track_id_column(data),"cluster")]) |> filter(cluster == TRUE) |>
-          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
-        names(event_list$cluster)[2] = "notification_type"
-        event_list$cluster$notification_type = "cluster"
-      }
-      if(any(colnames(data)=="nsd")){
-        event_list$nsd <- unique(data[,c(mt_track_id_column(data),"nsd")]) |> filter(nsd == TRUE) |> 
-          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
-        names(event_list$nsd)[2] = "notification_type"
-        event_list$nsd$notification_type = "nsd"
-      }
-      if(any(colnames(data)=="voltage")){
-        event_list$voltage <- unique(data[,c(mt_track_id_column(data),"voltage")]) |> filter(voltage == TRUE) |> 
-          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
-        names(event_list$voltage)[2] = "notification_type"
-        event_list$voltage$notification_type = "voltage"
-      }
-      if(any(colnames(data)=="gps_accuracy")){
-        event_list$gps_accuracy <- unique(data[,c(mt_track_id_column(data),"gps_accuracy")]) |> filter(gps_accuracy == TRUE) |> 
-          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
-        names(event_list$gps_accuracy)[2] = "notification_type"
-        event_list$gps_accuracy$notification_type = "gps_accuracy"
-      }
-      if(any(colnames(data)=="gps_transmission")){
-        event_list$gps_transmission <- unique(data[,c(mt_track_id_column(data),"gps_transmission")]) |> filter(gps_transmission== TRUE) |> 
-          as.data.frame() |> dplyr::select(-c(geometry,timestamp)) |> unique()
-        names(event_list$gps_transmission)[2] = "notification_type"
-        event_list$gps_transmission$notification_type = "gps_transmission"
-      }
-      # create temp data to extract unique ids and notification types
-      event_log  <- do.call(rbind, event_list)
-      # add current system date
-      event_log$logging_date <- as.character(Sys.Date())
-      # reset row names
-      row.names(event_log) <- 1:nrow(event_log)
-      # create folder in R-related user-specific data location in base package
-      if(isFALSE(dir.exists(paste0(temp_path,"/",paste0("log_",log_folder))))){
-        dir.create(paste0(temp_path,"/",paste0("log_",log_folder)), recursive = TRUE)
-      }
-      # write just this event log if one doesn't already exist
-      if(isFALSE(file.exists(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv")))){
-        write.csv(event_log, 
-                  file = paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"),
-                  row.names = FALSE)
-      }else
-        # append data and write as .csv file to temporary file
-        if(file.exists(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"))){
-          temp_file <- read.csv(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"))
-          write.csv(rbind(temp_file,event_log), paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv"),
-                    row.names = FALSE)
-        }
-      # write event log to appArtifactPath to test if they can be retained across runs (can remove this if the solution works)
-      write.csv(read.csv(paste0(temp_path,"/",paste0("log_",log_folder),"/event_log.csv")), file = appArtifactPath("event_log.csv"),
-                row.names = FALSE)
-      # write name of log folder to appArtifactPath
-      write(paste0("log_",log_folder), file = appArtifactPath("log_path.txt"))
-    }
     # organize and return results
     logger.info("Alerts were triggered for at least one field. The full dataset will be passed along with these alerts.")
     # now return all items as a list (for now)
