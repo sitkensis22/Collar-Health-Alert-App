@@ -1,5 +1,5 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "settings": [
     {
       "id": "mortality",
@@ -137,8 +137,8 @@
       {
         "id": "gps_transmission_gap",
         "name": "GPS transmission gap value",
-        "description": "Enter an integer value for the gap in days to trigger a GPS transmission alter. Note that input will only be used when the GPS transmission trigger is activiated.",
-        "defaultValue": 5,
+        "description": "Enter an integer value for the gap in days to trigger a GPS transmission alert. Note that input will only be used when the GPS transmission trigger is activiated.",
+        "defaultValue": 10,
         "type": "INTEGER"
       },   
       {
@@ -147,7 +147,21 @@
         "description": "Please check this box if you want to include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that input will only be used when the GPS transmission trigger is activiated.",
         "defaultValue": false,
         "type": "CHECKBOX"
-      }     
+      },
+      {
+        "id": "gps_resurrection",
+        "name": "Set GPS resurrection alert trigger?",
+        "description": "Please check this box if you want to check GPS resurrection anomalies.",
+        "defaultValue": false,
+        "type": "CHECKBOX"
+      },   
+      {
+        "id": "gps_resurrection_duration",
+        "name": "GPS resurrection duration value",
+        "description": "Enter an integer value for the duration in days to trigger a GPS resurrection alert. This is the duration that the collar has become active after a GPS transmission gap has occurred. Note that input will only be used when the GPS resurrection trigger is activiated.",
+        "defaultValue": 5,
+        "type": "INTEGER"
+      }
   ],
   "dependencies": {
     "R": [
@@ -191,7 +205,8 @@
     "nsd",
     "voltage",
     "gps",
-    "mortality"
+    "mortality",
+    "resurrection"
   ],
   "people": [
     {
