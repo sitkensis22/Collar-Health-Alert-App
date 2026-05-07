@@ -5,10 +5,10 @@ MoveApps
 Github repository: *github.com/sitkensis22/Notification-Alert-App* (*https://github.com/sitkensis22/Notification-Alert-App*)
 
 ## Description
-Generates and appends fields to data for 6 different types of alerts that were developed to monitor collar health: (1) mortality status, (2) cluster analysis, (3) maximum net-squared displacement, (4) voltage levels, (5) GPS accuracy, and (6) GPS transmission gaps.
+Generates and appends fields to data for 7 different types of alerts that were developed to monitor collar health: (1) mortality status, (2) cluster analysis, (3) maximum net-squared displacement, (4) voltage levels, (5) GPS accuracy, (6) GPS transmission gaps, and (7) the resurrection of a GPS tag or collar.
 
 ## Documentation
-This App provides a variety of tools to monitor collar health and generate alerts that are appended to the user's move2 dataset when present. It was developed to address the challenge of monitoring collars from different vendors within the same study that send out various alerts and require the user to use multple software platforms to monitor collar status and health. Also, rather than rely on other MoveApps in a workflow to provide fields for alerts (e.g., distanceMoved), the App has built-in functinonality to monitor movement anomalies using cluster analysis and calculating the maximum net-squared displacement over a user-provided duration of time. For large datasets, the cluster analysis can take considerable time to run, but this function can be switched off using the default setting (`cluster` = FALSE). Finally, this App was designed as a precusor step in a workflow for the Notificaiton Shiny App that allows the user to visualize the data in Leaflet basemaps, as well as graphical and tabular form.
+This App provides a variety of tools to monitor collar health and generate alerts that are appended to the user's move2 dataset when present. It was developed to address the challenge of monitoring collars from different vendors within the same study that send out various alerts and require the user to use multple software platforms to monitor collar status and health. Also, rather than rely on other MoveApps in a workflow to provide fields for alerts (e.g., distanceMoved), the App has built-in functinonality to monitor, for example, movement anomalies using cluster analysis and calculating the maximum net-squared displacement over a user-provided duration of time. For large datasets, the cluster analysis can take considerable time to run, but this function can be switched off using the default setting (`cluster` = FALSE). Finally, this App was designed as a precusor step in a workflow for the Notificaiton Shiny App that allows the user to visualize the data in Leaflet basemaps, as well as graphical and tabular form. This App was recently updated to work with the Email-Alert App to send out email notifications when an alert has been triggered. 
 
 ### Application scope
 #### Generality of App usability
@@ -26,7 +26,7 @@ The App should work for any kind of (location) data. However, certain fields wil
 `move2::move2_loc`
 
 ### Artefacts
-No artefacts are generated. 
+The App generates an artefact called 'cluster_output.csv' when cluster events are triggered, and this output is a .csv file of the mean centroid locations of the identified clusters. 
 
 ### Settings 
 **Set mortality alert (`mortality`):** This logical input acts as a switch to turn on mortality event monitoring based on a field or multiple fields provided in the next input. 
@@ -65,17 +65,20 @@ No artefacts are generated.
 
 **Minimum proportion threshold (`gps_accuracy_prop`):** This numeric input is for the proportion of missed locations or poor GPS accuracy as a threshold to trigger a GPS accuracy event. The field is ignored if the GPS accuracy alert is not activated.
 
-**Set GPS transmission alert (`GPS transmission gap`):** This logical input acts as a switch to turn on GPS transmission gap monitoring.
+**Set GPS transmission alert (`GPS transmission`):** This logical input acts as a switch to turn on GPS transmission gap monitoring.
 
 **GPS transmission gap value (`gps_transmission_gap`):** This integer input defines the gap in days to trigger a GPS transmission event. Note that the input will only be used when GPS transmission gap trigger is activated.
 
 **Include current date in timestamp (`gps_transmission_include_current`):** This logical input acts will include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that the input will only be used when GPS transmission gap trigger is activated.
 
+**Set GPS resurrection alert (`GPS resurrection`):** This logical input acts as a switch to turn on GPS resurrection monitoring. This feature detects when a collar or tag has resurrected after a period of non-transmission, which is indicated by a gap in GPS transmission. Note that this feature will is the input for `gps_transmission_gap` to first identify gaps in GPS transmission and then determine if the collar is resurrected.
+
+**GPS resurrection duration (`gps_resurrection_duration`):** This integer input defines the duration in days to trigger a GPS resurrection event. When the collar or tag has resurrected longer than this duration after a period of non-transmission, the alert will be activated. Note that the input will only be used when GPS resurrection gap trigger is activated.
+
 ### Changes in output data
-The App adds logical (TRUE/FALSE) fields to the input data for each alert class where the condition is TRUE for locations that meet the alert criteria and FALSE otherwise. Possible fields to be added are: (1) mortality, (2) cluster, (3) nsd, (4) voltage, (5) gps_accuracy, (6) and gps_transmission. Note that these fields are used downstream in other Apps that integrate into a workflow such as the Notification Filter App and Notification Shiny App.
+The App adds binary numerical (1/0) fields to the input data for each alert class where the condition is 1 for locations that meet the alert criteria and 0 otherwise. The following fields are added to the data: (1) mortality, (2) cluster, (3) nsd, (4) voltage, (5) gps_accuracy, (6) gps_transmission, and (7) gps_resurrection regardless if event triggers are detected or not. This functionality allows the App to be used in conjunction with the Email-Alert App when all 7 fields are included and the alert condition is set to 1 in the Email-Alert App. Note that these fields are used downstream in other Apps that integrate into a workflow such as the Notification Filter App and Notification Shiny App.The alias and value names provided as input for the App for mortality, voltage, and gps accuracy are stored as attribute data in the move2 data object that is output by the App for use in the Notification Shiny App within a workflow. 
 
 ### Most common errors
-**No alert fields appended to dataset:** Cause: None of the alert trigger conditions have been met. Solution: While this is not necessarily an error, check to make sure the desired alert triggers are activated and the settings are entered correctly.
 
 ### Null or error handling
 **Setting `mortality_alias`:** If the variable(s) is (or are) not present in the input dataset or not provided when the mortality switch is activated, an error will be returned. If the spelling does not match exactly, an error will be returned. Review available variables in the input dataset to confirm their existence and spelling. 
