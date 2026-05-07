@@ -375,10 +375,10 @@ rFunction = function(
     # check for time differences greater than gps_transmission_gap
     if(any(gps_transmission_check$time_diff>gps_transmission_gap, na.rm = TRUE)){
       # filter data by IDs 
-      gps_transmission_check <- gps_transmission_check |> slice(which(gps_transmission_check$time_diff>=gps_transmission_gap)) 
+      gps_resurrection_check <- gps_transmission_check |> slice(which(gps_transmission_check$time_diff>=gps_transmission_gap)) 
       # need to get max indices of transmission gap for those that had events
-      max_times_resurrection <- gps_transmission_check |> group_by(.data[[mt_track_id_column(gps_transmission_check)]]) |>
-        summarize(maxTimes = max(.data[[mt_time_column(gps_transmission_check)]], na.rm = TRUE),
+      max_times_resurrection <- gps_resurrection_check |> group_by(.data[[mt_track_id_column(gps_resurrection_check)]]) |>
+        summarize(maxTimes = max(.data[[mt_time_column(gps_resurrection_check)]], na.rm = TRUE),
                   maxFID = max(FID,na.rm=TRUE)) |> as.data.frame()              
       # now get time difference in days between gps_resurrection_check time and max time of each individual in gps_resurrection_check
       max_times_data <- data |> filter(mt_track_id(data) %in% mt_track_id(gps_resurrection_check)) |>
