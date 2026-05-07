@@ -373,7 +373,6 @@ rFunction = function(
           ungroup() |> slice(-1)
       }
     # check for time differences greater than gps_transmission_gap
-    # NEED TO TEST WHEN USER INCLUDES CURRENT DATE
     if(any(gps_transmission_check$time_diff>gps_transmission_gap, na.rm = TRUE)){
       # filter data by IDs 
       gps_transmission_check <- gps_transmission_check |> slice(which(gps_transmission_check$time_diff>=gps_transmission_gap)) 
