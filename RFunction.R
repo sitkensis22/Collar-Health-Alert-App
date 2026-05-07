@@ -168,9 +168,9 @@ rFunction = function(
     day_interval <- ifelse(nsd_duration > 1, paste(nsd_duration,"days"), paste(nsd_duration,"day"))
     # need to check for individuals that have a shorter duration of data than the day interval
     amt_track <- amt_track |> group_by(id) |> mutate(date_range = max(timestamp) - min(timestamp)) |> ungroup()
-    # now filter out individuals where data_range is less than day_interval if present
-    if(any(amt_track$date_range <= as.difftime(nsd_duration, units = "days"))){
-        amt_track <- amt_track |> filter(date_range > as.difftime(nsd_duration, units = "days"))
+    # now filter out individuals where data_range is less than day_interval
+    if(any(as.numeric(amt_track$date_range) <= nsd_duration)){
+      amt_track <- amt_track |> filter(as.numeric(date_range) > nsd_duration)
     }
     # create index for group over a user-defined number of days
     amt_track <- amt_track |> mutate(day = lubridate::date(t_)) |> group_by(id) |>
