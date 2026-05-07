@@ -21,5 +21,5 @@
     "gps_transmission_gap": "10",
     "gps_transmission_include_current": false,
     "gps_resurrection": true,
-    "gps_resurrection_duration": "5
+    "gps_resurrection_duration": "5"
 }
