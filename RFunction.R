@@ -10,7 +10,7 @@ library("units")
 
 # R function to generate event notifications based on 6 alert types (note movement has cluster and nsd)
 rFunction = function(
-  # data input (move2 object)
+    # data input (move2 object)
   data, # move2 data
   # alert class 1 = manufacturer notification of mortality event
   mortality = FALSE, # include a manufacturer mortality notification event field?
@@ -37,11 +37,22 @@ rFunction = function(
   gps_accuracy_prop = 0.10, # what proportion of low accuracy locations should trigger an event
   # alert class 6 = GPS transmission gap
   gps_transmission = FALSE, # check if collar has a gap in GPS transmissions
-  gps_transmission_gap = 3, # number of days between current date and last GPS transmission to trigger an event
+  gps_transmission_gap = 10, # number of days between current date and last GPS transmission to trigger an event
   gps_transmission_include_current = FALSE, # add the current system date to the timestamp vector in calculating the time differences
+  # alert class 7 = GPS resurrection check
+  gps_resurrection = FALSE, # check if a collar has resurrected after a period on non-transmission
+  gps_resurrection_duration = 5, # set the number of days that a collar has been active again after a period of non-transmission to trigger alert
   ...){
-  # add unique record identifer to data
+  # add unique record identifier to data
   data$FID <- 1:nrow(data)
+  # add all alert fields to data and set to zero
+  data$mortality <- numeric(nrow(data))
+  data$cluster <- numeric(nrow(data))
+  data$nsd <- numeric(nrow(data))
+  data$voltage <- numeric(nrow(data))
+  data$gps_accuracy <- numeric(nrow(data))
+  data$gps_transmission <- numeric(nrow(data))
+  data$gps_resurrection <- numeric(nrow(data))
   # alert class 1 = manufacturer notification of mortality event
   if(mortality){
     # set warning for condition true but missing alias or value
@@ -93,95 +104,91 @@ rFunction = function(
     }
     # add to event list if any mortalities identified
     if(nrow(mortality_check) > 0){
-      # create mortality variable for dataset (note that I changed this from using an event list before)
-      data$mortality <- FALSE
-      # now set the records that have a mortality event to TRUE
-      data$mortality[which(data$FID %in% mortality_check$FID)] = TRUE
+      # now set the records that have a mortality event to 1
+      data$mortality[which(data$FID %in% mortality_check$FID)] = 1
     }
   }
   # alert class 2 = cluster event
-    # check for cluster and carry out if TRUE
-    if(cluster){
-      # convert move2 to data frame for cluster analysis
-      clust_data <- data |> as.data.frame()
-      # add longitude and latitude coordinates to data frame
-      clust_data <- cbind(clust_data, st_coordinates(data))
-      # set ID, Date, Latitude, and Longitude names
-      clust_data <- clust_data |> rename(AID = mt_track_id_column(data),
-                                         TelemDate = mt_time_column(data),
-                                         Long = X,
-                                         Lat = Y)
-      # fix sequential cluster algorithm using GPSeq_clus
-      clust_out <- suppressWarnings(tryCatch(GPSeq_clus(dat = clust_data,
-                              search_radius_m = cluster_radius,
-                              window_days = cluster_window,
-                              clus_min_locs = cluster_minlocations,                                    
-                              centroid_calc = "mean",show_plots = c(FALSE, "mean"),                          
-                              store_plots = FALSE, scale_plot_clus = FALSE,prbar=FALSE),
-                              error = function(e) {NULL}))
-      if(isFALSE(is.null(clust_out))){
-        clust_out[[2]]$clus_dur_day <- clust_out[[2]]$clus_dur_hr
-        units(clust_out[[2]]$clus_dur_day) <- "days"
-        # check for minimum number of cluster days
-        if(any(clust_out[[2]]$clus_dur_day > cluster_duration)){
-          # filter for minimum number of cluster days
-          clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_duration)
-          # add cluster ID field to data
-          data$clus_ID <- clust_out[[1]]$clus_ID
-          # filter data based on cluster IDs in clust_out[[2]]
-          cluster_check <- data |> filter(clus_ID %in% clust_out[[2]]$clus_ID) |> 
-            dplyr::select(-clus_ID)
-          # remove clus_ID from data
-          data <- data |> dplyr::select(-clus_ID)
-          # create cluster variable for dataset (note that I changed this from using an event list before)
-          data$cluster <- FALSE
-          # now set the records that have a cluster event to TRUE
-          data$cluster[which(data$FID %in% cluster_check$FID)] = TRUE
-        }
+  # check for cluster and carry out if TRUE
+  if(cluster){
+    # convert move2 to data frame for cluster analysis
+    clust_data <- data |> as.data.frame()
+    # add longitude and latitude coordinates to data frame
+    clust_data <- cbind(clust_data, st_coordinates(data))
+    # set ID, Date, Latitude, and Longitude names
+    clust_data <- clust_data |> rename(AID = mt_track_id_column(data),
+                                       TelemDate = mt_time_column(data),
+                                       Long = X,
+                                       Lat = Y)
+    # fix sequential cluster algorithm using GPSeq_clus
+    clust_out <- suppressWarnings(tryCatch(GPSeq_clus(dat = clust_data,
+                                                      search_radius_m = cluster_radius,
+                                                      window_days = cluster_window,
+                                                      clus_min_locs = cluster_minlocations,                                    
+                                                      centroid_calc = "mean",show_plots = c(FALSE, "mean"),                          
+                                                      store_plots = FALSE, scale_plot_clus = FALSE,prbar=FALSE),
+                                           error = function(e) {NULL}))
+    if(isFALSE(is.null(clust_out))){
+      clust_out[[2]]$clus_dur_day <- clust_out[[2]]$clus_dur_hr
+      units(clust_out[[2]]$clus_dur_day) <- "days"
+      # check for minimum number of cluster days
+      if(any(clust_out[[2]]$clus_dur_day > cluster_duration)){
+        # filter for minimum number of cluster days
+        clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_duration)
+        # save cluster points to appArtefactPath
+        write.csv(clust_out[[2]], file = AppArtefactPath("cluster_output.csv"), row.names = FALSE)
+        # add cluster ID field to data
+        data$clus_ID <- clust_out[[1]]$clus_ID
+        # filter data based on cluster IDs in clust_out[[2]]
+        cluster_check <- data |> filter(clus_ID %in% clust_out[[2]]$clus_ID) |> 
+          dplyr::select(-clus_ID)
+        # remove clus_ID from data
+        data <- data |> dplyr::select(-clus_ID)
+        # now set the records that have a cluster event to 1
+        data$cluster[which(data$FID %in% cluster_check$FID)] = 1
       }
     }
+  }
   # alert class 3 = NSD event
-    if(nsd){
-      # get UTM zone for data
-      data_centroid <- data |> st_combine() |> st_centroid() |> st_coordinates() |>
-        as.vector()
-      # determine UTM zone
-      zone_number <- floor((data_centroid[1] + 180) / 6) + 1
-      utm_crs <- paste("+proj=utm",paste0("+zone=",zone_number),"+datum=WGS84 +units=m +no_defs")
-      data_utm <- data |> st_transform(st_crs(utm_crs))
-      # create amt dataset
-      amt_track <- data_utm |> mutate(x = st_coordinates(data_utm)[,1], y = st_coordinates(data_utm)[,2],
-                                      id = mt_track_id(data_utm), t = mt_time(data_utm)) |> 
-        st_drop_geometry() |> 
-        amt::make_track(.x = x, .y = y, .t = t,
-                        id = id,crs = utm_crs)
-      # create variable for user-defined number of days
-      day_interval <- ifelse(nsd_duration > 1, paste(nsd_duration,"days"), paste(nsd_duration,"day"))
-      # need to check for individuals that have a shorter duration of data than the day interval
-      amt_track <- amt_track |> group_by(id) |> mutate(date_range = max(timestamp) - min(timestamp)) |> ungroup()
-      # now filter out inddividuals where data_range is less than day_interval
-      amt_track <- amt_track |> filter(date_range > as.difftime(nsd_duration, units = "days"))
-      # create index for group over a user-defined number of days
-      amt_track <- amt_track |> mutate(day = lubridate::date(t_)) |> group_by(id) |>
-        mutate(day_index = as.factor(ifelse(is.na(as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))),
-                                            max(as.numeric(cut(day, seq(min(day), max(day), by = day_interval))),na.rm=TRUE)+1,
-                                            as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))))) |> ungroup()
-      # split track by id and day index, calculate NSD, and then merge again
-      amt_track_daily_nsd <- amt_track |>
-        group_split(id,day_index) |>
-        lapply(add_nsd) |> mt_stack(.track_combine = "merge")
-      # now calculate max NSD by ID and day index
-      amt_max_daily_nsd <- amt_track_daily_nsd |> dplyr::group_by(id, day_index) |> # Group by ID and day
-        mutate(maxNSD = max(nsd_, na.rm=TRUE)) |> 
-        ungroup() 
-      # conduct check of nsd minimum area for event
-      if(any(amt_max_daily_nsd$maxNSD < nsd_value)){
-        # create NSD variable for dataset (note that I changed this from using an event list before)
-        data$nsd <- FALSE
-        # now set the records that have a NSD event to TRUE
-        data$nsd[which(amt_max_daily_nsd$maxNSD < nsd_value)] = TRUE
-      }
-    }  
+  if(nsd){
+    # get UTM zone for data
+    data_centroid <- data |> st_combine() |> st_centroid() |> st_coordinates() |>
+      as.vector()
+    # determine UTM zone
+    zone_number <- floor((data_centroid[1] + 180) / 6) + 1
+    utm_crs <- paste("+proj=utm",paste0("+zone=",zone_number),"+datum=WGS84 +units=m +no_defs")
+    data_utm <- data |> st_transform(st_crs(utm_crs))
+    # create amt dataset
+    amt_track <- data_utm |> mutate(x = st_coordinates(data_utm)[,1], y = st_coordinates(data_utm)[,2],
+                                    id = mt_track_id(data_utm), t = mt_time(data_utm)) |> 
+      st_drop_geometry() |> 
+      amt::make_track(.x = x, .y = y, .t = t,
+                      id = id,crs = utm_crs)
+    # create variable for user-defined number of days
+    day_interval <- ifelse(nsd_duration > 1, paste(nsd_duration,"days"), paste(nsd_duration,"day"))
+    # need to check for individuals that have a shorter duration of data than the day interval
+    amt_track <- amt_track |> group_by(id) |> mutate(date_range = max(timestamp) - min(timestamp)) |> ungroup()
+    # now filter out individuals where data_range is less than day_interval
+    amt_track <- amt_track |> filter(date_range > as.difftime(nsd_duration, units = "days"))
+    # create index for group over a user-defined number of days
+    amt_track <- amt_track |> mutate(day = lubridate::date(t_)) |> group_by(id) |>
+      mutate(day_index = as.factor(ifelse(is.na(as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))),
+                                          max(as.numeric(cut(day, seq(min(day), max(day), by = day_interval))),na.rm=TRUE)+1,
+                                          as.numeric(cut(day, seq(min(day), max(day), by = day_interval)))))) |> ungroup()
+    # split track by id and day index, calculate NSD, and then merge again
+    amt_track_daily_nsd <- amt_track |>
+      group_split(id,day_index) |>
+      lapply(add_nsd) |> mt_stack(.track_combine = "merge")
+    # now calculate max NSD by ID and day index
+    amt_max_daily_nsd <- amt_track_daily_nsd |> dplyr::group_by(id, day_index) |> # Group by ID and day
+      mutate(maxNSD = max(nsd_, na.rm=TRUE)) |> 
+      ungroup() 
+    # conduct check of nsd minimum area for event
+    if(any(amt_max_daily_nsd$maxNSD < nsd_value)){
+      # now set the records that have a NSD event to 1
+      data$nsd[which(amt_max_daily_nsd$maxNSD < nsd_value)] = 1
+    }
+  }  
   # alert class 4 = voltage event
   if(voltage){ 
     # set warning for condition true but missing alias or value
@@ -197,7 +204,7 @@ rFunction = function(
     # subset records by user-provided voltage values
     if(isFALSE(is.null(voltage_value))){ 
       # nest these ifelse statements to avoid error
-       if(voltage_value >= 1){
+      if(voltage_value >= 1){
         voltage_check <- data |> 
           pivot_longer(cols = all_of(voltage_alias), 
                        names_to = "alias", 
@@ -209,33 +216,33 @@ rFunction = function(
           dplyr::select(-alias,-alias_vals) |>
           ungroup()  
       }else
-      # use given quantile value if voltage_value < 1  
-      if(voltage_value < 1){  # need to fix this to test for NULL
-        voltage_check <- data |> 
-          pivot_longer(cols = all_of(voltage_alias), 
-                       names_to = "alias", 
-                       values_to = "alias_vals") |> 
-          mutate(alias_vals = set_units(alias_vals, mV)) |>
-          group_by(mt_track_id_column(data)) |> 
-          filter(alias_vals <= set_units(as.numeric(quantile(alias_vals, probs = voltage_value, na.rm = TRUE)), mV)) |>
-          mutate(tag_voltage = alias_vals) |> 
-          dplyr::select(-alias,-alias_vals) |>
-          ungroup()
-       }
-      }else
-        # subset records by first quantile of voltage values
-        if(is.null(voltage_value)){ # need to fix this to test for NULL
+        # use given quantile value if voltage_value < 1  
+        if(voltage_value < 1){  # need to fix this to test for NULL
           voltage_check <- data |> 
             pivot_longer(cols = all_of(voltage_alias), 
                          names_to = "alias", 
                          values_to = "alias_vals") |> 
             mutate(alias_vals = set_units(alias_vals, mV)) |>
             group_by(mt_track_id_column(data)) |> 
-            filter(alias_vals <= set_units(as.numeric(quantile(alias_vals, probs = 0.25, na.rm = TRUE)), mV)) |>
+            filter(alias_vals <= set_units(as.numeric(quantile(alias_vals, probs = voltage_value, na.rm = TRUE)), mV)) |>
             mutate(tag_voltage = alias_vals) |> 
             dplyr::select(-alias,-alias_vals) |>
-            ungroup() 
+            ungroup()
         }
+    }else
+      # subset records by first quantile of voltage values
+      if(is.null(voltage_value)){ # need to fix this to test for NULL
+        voltage_check <- data |> 
+          pivot_longer(cols = all_of(voltage_alias), 
+                       names_to = "alias", 
+                       values_to = "alias_vals") |> 
+          mutate(alias_vals = set_units(alias_vals, mV)) |>
+          group_by(mt_track_id_column(data)) |> 
+          filter(alias_vals <= set_units(as.numeric(quantile(alias_vals, probs = 0.25, na.rm = TRUE)), mV)) |>
+          mutate(tag_voltage = alias_vals) |> 
+          dplyr::select(-alias,-alias_vals) |>
+          ungroup() 
+      }
     if(nrow(voltage_check) > 0){
       # reset to move2 object
       voltage_check <-mt_as_move2(voltage_check,
@@ -247,10 +254,8 @@ rFunction = function(
       if(any(duplicated(voltage_check$FID))){
         voltage_check <- voltage_check |> slice(-which(duplicated(FID)))
       }
-      # create voltage variable for dataset (note that I changed this from using an event list before)
-      data$voltage <- FALSE
-      # now set the records that have a voltage event to TRUE
-      data$voltage[which(data$FID %in% voltage_check$FID)] = TRUE
+      # now set the records that have a voltage event to 1
+      data$voltage[which(data$FID %in% voltage_check$FID)] = 1
     }
   }
   # alert class 5 = GPS accuracy event
@@ -324,10 +329,8 @@ rFunction = function(
           dplyr::select(all_of(mt_track_id_column(data)))
         # filter data by IDs 
         gps_accuracy_check <- gps_accuracy_check |> filter(.data[[mt_track_id_column(data)]] %in% prop_bad_ids)
-        # create gps accuracy variable for dataset (note that I changed this from using an event list before)
-        data$gps_accuracy <- FALSE
-        # now set the records that have a gps accuracy event to TRUE
-        data$gps_accuracy[which(data$FID %in% gps_accuracy_check$FID)] = TRUE
+        # now set the records that have a gps accuracy event to 1
+        data$gps_accuracy[which(data$FID %in% gps_accuracy_check$FID)] = 1
       }
     }
   }
@@ -350,46 +353,72 @@ rFunction = function(
     if(any(gps_transmission_check$time_diff>gps_transmission_gap, na.rm = TRUE)){
       # filter data by IDs 
       gps_transmission_check <- gps_transmission_check |> slice(which(gps_transmission_check$time_diff>=gps_transmission_gap))
-      # create gps_transmission variable for dataset (note that I changed this from using an event list before)
-      data$gps_transmission <- FALSE
-      # now set the records that have a gps_transmission event to TRUE
-      data$gps_transmission[which(data$FID %in% gps_transmission_check$FID)] = TRUE
+      # now set the records that have a gps_transmission event to 1
+      data$gps_transmission[which(data$FID %in% gps_transmission_check$FID)] = 1
     }
   }
-  # check data if there are events 
-  if(any(names(data) %in% c("mortality","cluster","nsd","voltage","gps_accuracy","gps_transmission"))){
-    # store directory for R-related user-specific data in base package
-    temp_path <- tools::R_user_dir("base", which = "data")
-    # create empty list to hold aliases and values
-    alias_list <- list()
-    # write any aliases and values to temp .rds file to use in Shiny app
-    if(any(colnames(data) == "mortality")){
-      alias_list$mortality_alias <- mortality_alias
-      alias_list$mortality_value <- mortality_value
+  # alert class 7 = GPS resurrection event
+  if(gps_resurrection){
+    # use settings from GPS_tranmission_gap to identify ressurection
+    if(gps_transmission_include_current){
+      gps_transmission_check <- data |> 
+        group_by(.data[[mt_track_id_column(data)]]) |> 
+        mutate(time_diff = diff(c(.data[[mt_time_column(data)]],lubridate::with_tz(Sys.time(), "UTC")), units = "days")) |>
+        ungroup()
+    }else
+      if(isFALSE(gps_transmission_include_current)){
+        gps_transmission_check <- data |> 
+          group_by(.data[[mt_track_id_column(data)]]) |> 
+          mutate(time_diff = c(NA,diff(.data[[mt_time_column(data)]], units = "days"))) |>
+          ungroup() |> slice(-1)
+      }
+    # check for time differences greater than gps_transmission_gap
+    # NEED TO TEST WHEN USER INCLUDES CURRENT DATE
+    if(any(gps_transmission_check$time_diff>gps_transmission_gap, na.rm = TRUE)){
+      # filter data by IDs 
+      gps_transmission_check <- gps_transmission_check |> slice(which(gps_transmission_check$time_diff>=gps_transmission_gap)) 
+      # need to get max indices of transmission gap for those that had events
+      max_times_resurrection <- gps_transmission_check |> group_by(.data[[mt_track_id_column(gps_transmission_check)]]) |>
+        summarize(maxTimes = max(.data[[mt_time_column(gps_transmission_check)]], na.rm = TRUE),
+                  maxFID = max(FID,na.rm=TRUE)) |> as.data.frame()              
+      # now get time difference in days between gps_resurrection_check time and max time of each individual in gps_resurrection_check
+      max_times_data <- data |> filter(mt_track_id(data) %in% mt_track_id(gps_resurrection_check)) |>
+        group_by(.data[[mt_track_id_column(data)]]) |>
+        summarize(maxTimes = max(.data[[mt_time_column(data)]], na.rm = TRUE),
+                  maxFID = max(FID,na.rm=TRUE)) |> as.data.frame() 
+      max_times_resurrection$timediff = as.numeric(difftime( max_times_data$maxTimes,max_times_resurrection$maxTimes, 
+                                                             units = "days"))
+      if(any(max_times_resurrection$timediff>gps_resurrection_duration, na.rm = TRUE)){
+        # filter data by IDs 
+        max_times_resurrection <- max_times_resurrection |> slice(which(max_times_resurrection$timediff>gps_resurrection_duration))
+        # now loop over individuals to populate resurrection events to 1
+        for(i in 1:nrow(max_times_resurrection)){
+          data[data$FID %in% c(max_times_resurrection$maxFID[i]:max_times_data$maxFID[i]),]$gps_resurrection = 1
+        }
+      }
     }
-    if(any(colnames(data) == "voltage")){
-      alias_list$voltage_alias <- voltage_alias
-      alias_list$voltage_value <- voltage_value
-    }
-    if(any(colnames(data) == "gps_accuracy")){
-      alias_list$gps_accuracy_alias <- gps_accuracy_alias
-      alias_list$gps_accuracy_value <- gps_accuracy_value
-    }
-    # create director for alias_list if it doesn't exist
-    if(isFALSE(dir.exists(paste0(temp_path,"/","alias_folder")))){
-       dir.create(paste0(temp_path,"/","alias_folder"), recursive = TRUE)
-    }
-    # save to alias list to temp_path folder as .rds
-    saveRDS(alias_list, 
-            file = paste0(temp_path,"/","alias_folder/alias_list.rds"))
-    # organize and return results
-    logger.info("Alerts were triggered for at least one field. The full dataset will be passed along with these alerts.")
-    # now return all items as a list (for now)
-    return(data)
-  }else
-    if(any(names(data) %in% c("mortality","cluster","nsd","voltage","gps_accuracy","gps_transmission"))==FALSE){
-      # return empty list if no events triggered
-      logger.info("No events were triggered given the data and parameters that were set. No alerts were added to the data.")
-    }
+    # end of alert event checks
+  }
+  # write any aliases and values attributes of the move2 data object
+  if(mortality){
+    attr(data, "mortality_alias") <- mortality_alias
+    attr(data, "mortality_value") <- mortality_value
+  }
+  if(voltage){
+    attr(data, "voltage_alias") <- voltage_alias
+    attr(data, "voltage_value") <- voltage_value
+  }
+  if(gps_accuracy){
+    attr(data, "gps_accuracy_alias") <- gps_accuracy_alias
+    attr(data, "gps_accuracy_value") <- gps_accuracy_value
+  }
+  # get index of geometry field
+  geometry_index <- which(colnames(data) == "geometry")
+  # now organize data set
+  data <- data[,c((1:ncol(data))[-geometry_index],geometry_index)]
+  # now drop FID field
+  data <- data |> dplyr::select(-FID)
+  # now return move2 dataset (whether there are events or not)
+  return(data)
   # end function
-}
+}  
