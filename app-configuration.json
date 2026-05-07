@@ -18,6 +18,8 @@
     "gps_accuracy_value": "NO FIX",
     "gps_accuracy_prop": "0.10",
     "gps_transmission": true,
-    "gps_transmission_gap": "5",
-    "gps_transmission_include_current": false
+    "gps_transmission_gap": "10",
+    "gps_transmission_include_current": false,
+    "gps_resurrection": true,
+    "gps_resurrection_duration": "5
 }
