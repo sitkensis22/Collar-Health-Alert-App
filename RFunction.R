@@ -134,7 +134,7 @@ rFunction = function(
       # check for minimum number of cluster days
       if(any(clust_out[[2]]$clus_dur_day > cluster_duration)){
         # filter for minimum number of cluster days
-        clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_duration)
+        clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_day > cluster_duration)
         # save cluster points to appArtefactPath
         write.csv(clust_out[[2]], file = appArtifactPath("cluster_output.csv"), row.names = FALSE)
         # add cluster ID field to data
