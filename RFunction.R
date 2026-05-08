@@ -136,7 +136,7 @@ rFunction = function(
         # filter for minimum number of cluster days
         clust_out[[2]] <- clust_out[[2]] |> filter(clus_dur_hr > cluster_duration)
         # save cluster points to appArtefactPath
-        write.csv(clust_out[[2]], file = AppArtefactPath("cluster_output.csv"), row.names = FALSE)
+        write.csv(clust_out[[2]], file = appArtifactPath("cluster_output.csv"), row.names = FALSE)
         # add cluster ID field to data
         data$clus_ID <- clust_out[[1]]$clus_ID
         # filter data based on cluster IDs in clust_out[[2]]
