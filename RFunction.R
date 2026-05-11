@@ -413,6 +413,13 @@ rFunction = function(
     attr(data, "gps_accuracy_alias") <- gps_accuracy_alias
     attr(data, "gps_accuracy_value") <- gps_accuracy_value
   }
+  # create a count of alerts for each individual for email alert app
+  data$alertSum <- data |> as.data.frame() |> dplyr::select(mortality,cluster,nsd,voltage,gps_accuracy,gps_transmission,gps_resurrection) |>
+                  apply(1,sum)
+  # now create nAlerts variable by getting maximum number of alerts for each individual
+  data <- data |> group_by(.data[[mt_track_id_column(data)]]) |> mutate(nAlerts = max(alertSum)) |> ungroup()
+  # remove alertSum variable
+  data <- data |> dplyr::select(-alertSum)
   # get index of geometry field
   geometry_index <- which(colnames(data) == "geometry")
   # now organize data set
