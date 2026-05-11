@@ -400,18 +400,23 @@ rFunction = function(
     }
     # end of alert event checks
   }
-  # write any aliases and values attributes of the move2 data object
+  # append any aliases and values to data to use in Shiny app
   if(mortality){
-    attr(data, "mortality_alias") <- mortality_alias
-    attr(data, "mortality_value") <- mortality_value
+    data$mortality_alias <- mortality_alias
+    data$mortality_value <- mortality_value
   }
   if(voltage){
-    attr(data, "voltage_alias") <- voltage_alias
-    attr(data, "voltage_value") <- voltage_value
-  }
+    data$voltage_alias <- voltage_alias
+    if(is.null(voltage_value)){
+      data$voltage_value <- ""
+    }else
+      if(isFALSE(is.null(voltage_value))){
+        data$voltage_value <- voltage_value
+      }
+  }  
   if(gps_accuracy){
-    attr(data, "gps_accuracy_alias") <- gps_accuracy_alias
-    attr(data, "gps_accuracy_value") <- gps_accuracy_value
+    data$gps_accuracy_alias <- gps_accuracy_alias
+    data$gps_accuracy_value <- gps_accuracy_value
   }
   # create a count of alerts for each individual for email alert app
   data$alertSum <- data |> as.data.frame() |> dplyr::select(mortality,cluster,nsd,voltage,gps_accuracy,gps_transmission,gps_resurrection) |>
