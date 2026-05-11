@@ -1,8 +1,8 @@
-# Notifcation Alert App
+# Collar Health Alert App
 
 MoveApps
 
-Github repository: *github.com/sitkensis22/Notification-Alert-App* (*https://github.com/sitkensis22/Notification-Alert-App*)
+Github repository: *github.com/sitkensis22/Collar-Health-Alert-App* (*https://github.com/sitkensis22/Collar-Health-Alert-App*)
 
 ## Description
 Generates and appends fields to data for 7 different types of alerts that were developed to monitor collar health: (1) mortality status, (2) cluster analysis, (3) maximum net-squared displacement, (4) voltage levels, (5) GPS accuracy, (6) GPS transmission gaps, and (7) the resurrection of a GPS tag or collar.
@@ -63,7 +63,7 @@ The App generates an artefact called 'cluster_output.csv' when cluster events ar
 
 **GPS accuracy value (`gps_accuracy_value`):** This character string input is the value that indicates that a missed location or poor GPS accuracy has occurred. Note that multiple values may be provided to accomodate datasets that are from multiple collar vendors and more than one GPS accuracy value indicates a missed location or poor GPS accuracy has occured. Multiple values must be comma-separated. The field is ignored if the GPS accuracy alert is not activated.
 
-**Minimum proportion threshold (`gps_accuracy_prop`):** This numeric input is for the proportion of missed locations or poor GPS accuracy as a threshold to trigger a GPS accuracy event. The field is ignored if the GPS accuracy alert is not activated.
+**Minimum proportion threshold (`gps_accuracy_prop`):** This numeric input is for the proportion of missed locations or poor GPS accuracy as a threshold to trigger a GPS accuracy event. The value must be between 0 and 1. The field is ignored if the GPS accuracy alert is not activated.
 
 **Set GPS transmission alert (`GPS transmission`):** This logical input acts as a switch to turn on GPS transmission gap monitoring.
 
@@ -76,7 +76,7 @@ The App generates an artefact called 'cluster_output.csv' when cluster events ar
 **GPS resurrection duration (`gps_resurrection_duration`):** This integer input defines the duration in days to trigger a GPS resurrection event. When the collar or tag has resurrected longer than this duration after a period of non-transmission, the alert will be activated. Note that the input will only be used when GPS resurrection gap trigger is activated.
 
 ### Changes in output data
-The App adds binary numerical (1/0) fields to the input data for each alert class where the condition is 1 for locations that meet the alert criteria and 0 otherwise. The following fields are added to the data: (1) mortality, (2) cluster, (3) nsd, (4) voltage, (5) gps_accuracy, (6) gps_transmission, and (7) gps_resurrection regardless if event triggers are detected or not. This functionality allows the App to be used in conjunction with the Email-Alert App when all 7 fields are included and the alert condition is set to 1 in the Email-Alert App. Note that these fields are used downstream in other Apps that integrate into a workflow such as the Notification Filter App and Notification Shiny App. The alias and value names provided as input for the App for mortality, voltage, and gps accuracy are stored as attribute data in the move2 data object that is output by the App for use in the Notification Shiny App within a workflow. 
+The App adds binary numerical (1/0) fields to the input data for each alert class where the condition is 1 for locations that meet the alert criteria and 0 otherwise. The following fields are added to the data: (1) mortality, (2) cluster, (3) nsd, (4) voltage, (5) gps_accuracy, (6) gps_transmission, and (7) gps_resurrection regardless if event triggers are detected or not. The App also adds a field called `nAlerts` to the dataset, which tracks the number of alerts for each individual. This functionality allows the App to be used in conjunction with the Email-Alert App when the `nAlerts` is included as the `Location alert property` and the `Property relation` input is set to `>= 1` in the Email-Alert App. Note that these fields are used downstream in other Apps that integrate into a workflow such as the Notification Filter App and Notification Shiny App. The alias and value names provided as input for the App for mortality, voltage, and gps accuracy are stored as attribute data in the move2 data object that is output by the App for use in the Notification Shiny App within a workflow. 
 
 ### Most common errors
 
