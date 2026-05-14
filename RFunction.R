@@ -8,7 +8,7 @@ library("units")
 
 ## The parameter "data" is reserved for the data object passed on from the previous app
 
-# R function to generate event notifications based on 6 alert types (note movement has cluster and nsd)
+# R function to generate event notifications based on 7 alert types 
 rFunction = function(
     # data input (move2 object)
   data, # move2 data
