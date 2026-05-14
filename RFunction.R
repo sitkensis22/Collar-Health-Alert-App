@@ -10,7 +10,6 @@ library("units")
 
 # R function to generate event notifications based on 7 alert types 
 rFunction = function(
-    # data input (move2 object)
   data, # move2 data
   # alert class 1 = manufacturer notification of mortality event
   mortality = FALSE, # include a manufacturer mortality notification event field?
