@@ -11,14 +11,14 @@
     {
       "id": "mortality_alias",
       "name": "Mortality field name",
-      "description": "Enter field name(s) that tracks mortality status in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if mortality trigger is activated.",
+      "description": "Enter field name(s) that tracks mortality status in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple fields must be comma-separated and input is only used if mortality trigger is activated.",
       "defaultValue": null,
       "type": "STRING"
     },
     {
       "id": "mortality_value",
       "name": "Mortality status value",
-      "description": "Enter character string of field that indicates a mortality has occurred. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality value indicates a mortality has occured. Multiple values must be comma-separated and input is only used if mortality trigger is activated.",
+      "description": "Enter character string value that indicates a mortality has occurred. Note that multiple values may be provided to cover cases where collar data come from multiple vendors and more than one mortality value indicates a mortality has occured. Multiple values must be comma-separated and input is only used if mortality trigger is activated.",
       "defaultValue": null,
       "type": "STRING"
     },
@@ -88,7 +88,7 @@
       {
         "id": "voltage_alias",
         "name": "Voltage field name",
-        "description": "Enter field name(s) that tracks voltage in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if voltage trigger is activated.",
+        "description": "Enter field name(s) that tracks voltage in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple fields must be comma-separated and input is only used if voltage trigger is activated.",
         "defaultValue": null,
         "type": "STRING"
       }, 
@@ -109,14 +109,14 @@
       {
         "id": "gps_accuracy_alias",
         "name": "GPS accuracy field name",
-        "description": "Enter field name(s) that tracks GPS accuracy in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
+        "description": "Enter field name(s) that tracks GPS accuracy in the dataset. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one mortality status field exists. Multiple fields must be comma-separated and input is only used if GPS accuracy trigger is activated.",
         "defaultValue": null,
         "type": "STRING"
       },
       {
         "id": "gps_accuracy_value",
         "name": "GPS accuracy value",
-        "description": "Enter character string of field that indicates a missed location or poor GPS accuracy has occurred. Note that multiple fields may be provided to cover cases where collar data come from multiple vendors and more than one GPS accuracy value indicates a missed location or poor GPS accuracy has occured. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
+        "description": "Enter character string value that indicates a missed location or poor GPS accuracy has occurred. Note that multiple values may be provided to cover cases where collar data come from multiple vendors and more than one GPS accuracy value indicates a missed location or poor GPS accuracy has occured. Multiple values must be comma-separated and input is only used if GPS accuracy trigger is activated.",
         "defaultValue": null,
         "type": "STRING"
       },
