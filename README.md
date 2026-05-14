@@ -65,13 +65,13 @@ The App generates an artefact called 'cluster_output.csv' when cluster events ar
 
 **Minimum proportion threshold (`gps_accuracy_prop`):** This numeric input is for the proportion of missed locations or poor GPS accuracy as a threshold to trigger a GPS accuracy event. The value must be between 0 and 1. The field is ignored if the GPS accuracy alert is not activated.
 
-**Set GPS transmission alert (`GPS transmission`):** This logical input acts as a switch to turn on GPS transmission gap monitoring.
+**Set GPS transmission alert (`gps_transmission`):** This logical input acts as a switch to turn on GPS transmission gap monitoring.
 
 **GPS transmission gap value (`gps_transmission_gap`):** This integer input defines the gap in days to trigger a GPS transmission event. Note that the input will only be used when GPS transmission gap trigger is activated.
 
 **Include current date in timestamp (`gps_transmission_include_current`):** This logical input acts will include the current system date in the timestamp vector in checking for GPS transmission anomalies. Note that the input will only be used when GPS transmission gap trigger is activated.
 
-**Set GPS resurrection alert (`GPS resurrection`):** This logical input acts as a switch to turn on GPS resurrection monitoring. This feature detects when a collar or tag has resurrected after a period of non-transmission, which is indicated by a gap in GPS transmission. Note that this feature uses the input `gps_transmission_gap` to first identify gaps in GPS transmission and then determine if the collar is resurrected.
+**Set GPS resurrection alert (`gps_resurrection`):** This logical input acts as a switch to turn on GPS resurrection monitoring. This feature detects when a collar or tag has resurrected after a period of non-transmission, which is indicated by a gap in GPS transmission. Note that this feature uses the input `gps_transmission_gap` to first identify gaps in GPS transmission and then determine if the collar is resurrected.
 
 **GPS resurrection duration (`gps_resurrection_duration`):** This integer input defines the duration in days to trigger a GPS resurrection event. When the collar or tag has resurrected longer than this duration after a period of non-transmission, the alert will be activated. Note that the input will only be used when GPS resurrection gap trigger is activated.
 
