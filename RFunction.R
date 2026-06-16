@@ -388,8 +388,10 @@ rFunction = function(
       max_times_resurrection$timediff = as.numeric(difftime( max_times_data$maxTimes,max_times_resurrection$maxTimes, 
                                                              units = "days"))
       if(any(max_times_resurrection$timediff >= as.numeric(gps_resurrection_duration), na.rm = TRUE)){
-        # filter data by IDs 
+        # filter data by time differences
         max_times_resurrection <- max_times_resurrection |> slice(which(max_times_resurrection$timediff >= as.numeric(gps_resurrection_duration)))
+        # filter max_times_data by IDs in max_times_resurrection
+        max_times_data <- max_times_data |> filter(max_times_data[,mt_track_id_column(gps_resurrection_check)] %in% max_times_resurrection[,mt_track_id_column(gps_resurrection_check)])
         # now loop over individuals to populate resurrection events to 1
         for(i in 1:nrow(max_times_resurrection)){
           data[data$FID %in% c(max_times_resurrection$maxFID[i]:max_times_data$maxFID[i]),]$gps_resurrection = 1
