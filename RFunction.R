@@ -160,6 +160,8 @@ rFunction = function(
     day_interval <- ifelse(as.numeric(nsd_duration) > 1, paste(as.numeric(nsd_duration),"days"), paste(as.numeric(nsd_duration),"day"))
     # need to check for individuals that have a shorter duration of data than the day interval
     amt_track <- amt_track |> group_by(id) |> mutate(date_range = max(timestamp) - min(timestamp)) |> ungroup()
+    # convert date_range variable to days
+    units(amt_track$date_range) <- "days"
     # now filter out individuals where data_range is less than day_interval
     if(any(as.numeric(amt_track$date_range) <= as.numeric(nsd_duration))){
       amt_track <- amt_track |> filter(as.numeric(date_range) > nsd_duration)
