@@ -15,32 +15,34 @@ rFunction = function(
   mortality = FALSE, # include a manufacturer mortality notification event field?
   mortality_alias = NULL, # name of variable that tracks mortality status (can be more than one name)
   mortality_value = NULL, # levels of variable that indicate a mortality event
-  # alert class 2 = cluster event
+  # alert class 2 = resurrection of manufacturer notification of mortality event
+  resurrection = FALSE, # include a resurrection of manufacturer mortality notification event field?
+  # alert class 3 = cluster event
   cluster = FALSE, # include cluster analysis to detect events?
   cluster_radius = 50, # search radius in meters when using cluster analysis
   cluster_window = 3, # moving window length when using cluster analysis
   cluster_minlocations = 10, # minimum number of locations when using cluster analysis
-  # alert class 3 = nsd event
+  # alert class 4 = nsd event
   nsd = FALSE, # include net-squared displacement to detect events?
   nsd_value = 1000, # area in square meters as a minimum threshold based on daily NSD to have an event
   nsd_duration = 5, # number of days to summarize maximum NSD over
-  # alert class 4 = collar voltage event
+  # alert class 5 = collar voltage event
   voltage = FALSE, # check for low voltage levels in collar
   voltage_alias = NULL, # name of voltage field to check (can be more than one name)
   voltage_value = NULL, # minimum voltage to trigger a warning (use 1st quartile if left as NULL)
-  # alert class 5 = GPS accuracy check
+  # alert class 6 = GPS accuracy check
   gps_accuracy = FALSE, # check if collar is have low accuracy (e.g., high percentage of 2D fixes)
   gps_accuracy_alias = NULL, # can be more than one field (e.g, different collar vendors for same project)
   gps_accuracy_value = NULL, # what levels of the variable indicate low accuracy?
   gps_accuracy_prop = 0.10, # what proportion of low accuracy locations should trigger an event
-  # alert class 6 = GPS transmission gap
+  # alert class 7 = GPS transmission gap
   gps_transmission = FALSE, # check if collar has a gap in GPS transmissions
   gps_transmission_gap = 10, # number of days between current date and last GPS transmission to trigger an event
   gps_transmission_include_current = FALSE, # add the current system date to the timestamp vector in calculating the time differences
-  # alert class 7 = GPS resurrection check
+  # alert class 8 = GPS resurrection check
   gps_resurrection = FALSE, # check if a collar has resurrected after a period on non-transmission
   gps_resurrection_duration = 5, # set the number of days that a collar has been active again after a period of non-transmission to trigger alert
-  # alert class 8 = collar release check
+  # alert class 9 = collar release check
   tag_release = FALSE, # check if a collar (or tag) release should have occurred given collar_prerelease_days
   tag_prerelease_days = 5, # number of days before release date to generate an alert
   ...){
@@ -48,6 +50,7 @@ rFunction = function(
   data$FID <- 1:nrow(data)
   # add all alert fields to data and set to zero
   data$mortality <- numeric(nrow(data))
+  data$resurrection <- numeric(nrow(data))
   data$cluster <- numeric(nrow(data))
   data$nsd <- numeric(nrow(data))
   data$voltage <- numeric(nrow(data))
@@ -110,7 +113,29 @@ rFunction = function(
       data$mortality[which(data$FID %in% mortality_check$FID)] = 1
     }
   }
-  # alert class 2 = cluster event
+  # alert class 2 = ressurection of manufacturer notification of mortality event
+  if(resurrection){
+    # logical check that any mortalities exist
+    if(any(data$mortality == 1)){
+      # filter mortality alerts present in data
+      mortality_resurrection_check <- data |> slice(which(mortality == 1))
+      # store unique id's with mortality events present
+      unique_mort_ids <- unique(mt_track_id(mortality_resurrection_check))
+      # get minimum and maximum index of resurrection events
+      min_index <- data |> filter(mt_track_id(data) %in% unique_mort_ids) |> 
+          group_by(.data[[mt_track_id_column(data)]]) |> summarize(minIndex = min(which(mortality == 1)),maxIndex = max(which(mortality == 1)))
+      # now loop over individuals to populate mortality resurrection events to 1
+      for(i in 1:nrow(min_index)){
+        # store mortality vector
+        temp_mortality <- data[mt_track_id(data) %in% unique_mort_ids[i],]$mortality[min_index$minIndex[i]:min_index$maxIndex[i]]
+        # get index of temp_mortality of indexes that equal zero
+        temp_index <- which(temp_mortality == 0)
+        # populate resurrection field
+        data[mt_track_id(data) %in% unique_mort_ids[i],]$resurrection[min_index$minIndex[i]:min_index$maxIndex[i]][temp_index] <- 1
+      } 
+    }
+  }
+  # alert class 3 = cluster event
   # check for cluster and carry out if TRUE
   if(cluster){
     # convert move2 to data frame for cluster analysis
@@ -141,7 +166,7 @@ rFunction = function(
         data <- data |> dplyr::select(-clus_ID)
     }
   }
-  # alert class 3 = NSD event
+  # alert class 4 = NSD event
   if(nsd){
   # get UTM zone for data
     data_centroid <- data |> st_combine() |> st_centroid() |> st_coordinates() |>
@@ -189,7 +214,7 @@ rFunction = function(
       }
     }
   }  
-  # alert class 4 = voltage event
+  # alert class 5 = voltage event
   if(voltage){ 
     # set warning for condition true but missing alias or value
     # this will be replace with logger.warning() using in Moveapps
@@ -258,7 +283,7 @@ rFunction = function(
       data$voltage[which(data$FID %in% voltage_check$FID)] = 1
     }
   }
-  # alert class 5 = GPS accuracy event
+  # alert class 6 = GPS accuracy event
   if(gps_accuracy){
     # set warning for condition true but missing alias or value
     # this will be replace with logger.warning() using in Moveapps
@@ -334,7 +359,7 @@ rFunction = function(
       }
     }
   }
-  # alert class 6 = GPS transmission event 
+  # alert class 7 = GPS transmission event 
   if(gps_transmission){
     # check for events based on timestamp
     if(gps_transmission_include_current){
@@ -357,7 +382,7 @@ rFunction = function(
       data$gps_transmission[which(data$FID %in% gps_transmission_check$FID)] = 1
     }
   }
-  # alert class 7 = GPS resurrection event
+  # alert class 8 = GPS resurrection event
   if(gps_resurrection){
     # use settings from GPS_tranmission_gap to identify ressurection
     if(gps_transmission_include_current){
@@ -400,7 +425,7 @@ rFunction = function(
     }
     # end of alert event checks
   }
-  # alert class 8 = collar release check
+  # alert class 9 = collar release check
   if(tag_release){
       if(isFALSE(any(colnames(mt_track_data(data)) == "scheduled_detachment_date"))){
         logger.warn("Data set does not contain the variable: scheduled_detachment_date. Please turn off tag_release switch")
@@ -436,16 +461,16 @@ rFunction = function(
   # summarize number of alerts per individual and create tibble
   alertSums <- data |> as.data.frame() |>
                group_by(.data[[mt_track_id_column(data)]]) |>
-               summarize(mortality = sum(mortality),cluster = sum(cluster),
-               nsd = sum(nsd), voltage = sum(voltage), gps_accuracy = sum(gps_accuracy), 
+               summarize(mortality = sum(mortality),resurrection = sum(resurrection),
+               cluster = sum(cluster), nsd = sum(nsd), voltage = sum(voltage), gps_accuracy = sum(gps_accuracy), 
                gps_transmission = sum(gps_transmission), gps_resurrection = sum(gps_resurrection),
                tag_release = sum(tag_release)) |>
-               mutate(mortality = ifelse(mortality >= 1, 1, 0), cluster = ifelse(cluster >= 1, 1, 0),
-               nsd = ifelse(nsd >= 1, 1, 0), voltage = ifelse(voltage >= 1, 1, 0),
+               mutate(mortality = ifelse(mortality >= 1, 1, 0), resurrection = ifelse(resurrection >= 1, 1, 0), 
+               cluster = ifelse(cluster >= 1, 1, 0), nsd = ifelse(nsd >= 1, 1, 0), voltage = ifelse(voltage >= 1, 1, 0),
                gps_accuracy = ifelse(gps_accuracy >= 1, 1, 0), gps_transmission = ifelse(gps_transmission >= 1, 1, 0),
                gps_resurrection = ifelse(gps_resurrection >= 1, 1, 0), tag_release = ifelse(tag_release >= 1, 1, 0)) |> ungroup() |> 
                mutate(nAlerts = rowSums(across(c(mortality,cluster,nsd,voltage,gps_accuracy,gps_transmission,gps_resurrection,tag_release)))) |>
-               select(-c(mortality,cluster,nsd,voltage,gps_accuracy,gps_transmission,gps_resurrection,tag_release))
+               select(-c(mortality,resurrection,cluster,nsd,voltage,gps_accuracy,gps_transmission,gps_resurrection,tag_release))
   # merge nAlerts into move2 data
   data <- left_join(data, alertSums, by = mt_track_id_column(data))
   # calculate consecutive distance between locations
