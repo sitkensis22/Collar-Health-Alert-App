@@ -123,7 +123,7 @@ rFunction = function(
       unique_mort_ids <- unique(mt_track_id(mortality_resurrection_check))
       # get minimum and maximum index of resurrection events
       min_index <- data |> filter(mt_track_id(data) %in% unique_mort_ids) |> 
-          group_by(.data[[mt_track_id_column(data)]]) |> summarize(minIndex = min(which(mortality == 1)),maxIndex = max(which(mortality == 1)))
+          group_by(.data[[mt_track_id_column(data)]]) |> summarize(minIndex = min(which(mortality == 1)),maxIndex = length(mortality == 1))
       # now loop over individuals to populate mortality resurrection events to 1
       for(i in 1:nrow(min_index)){
         # store mortality vector
