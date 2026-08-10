@@ -23,6 +23,13 @@
       "type": "STRING"
     },
     {
+      "id": "resurrection",
+      "name": "Set mortality resurrection alert trigger?",
+      "description": "Please check this box if you want to check for mortality resurrection events in a manufacturer-provided field.",
+      "defaultValue": false,
+      "type": "CHECKBOX"
+    },
+    {
       "id": "cluster",
       "name": "Set cluster alert trigger?",
       "description": "Please check this box if you want to check for cluster events in based on specific parameters.",
